@@ -5,8 +5,8 @@ import dynamic from "next/dynamic";
 import Head from "next/head";
 import { useRouter } from "next/router";
 
-// Dynamically import AidGlobe to avoid SSR issues
-const AidGlobe = dynamic(() => import("../components/AidGlobe"), {
+// Dynamically import OpenReliefGlobe to avoid SSR issues
+const OpenReliefGlobe = dynamic(() => import("../components/OpenReliefGlobe"), {
   ssr: false,
   loading: () => (
     <div className="flex items-center justify-center h-screen bg-gradient-to-br from-slate-900 to-slate-800">
@@ -49,7 +49,7 @@ export default function LoginPage() {
   return (
     <>
       <Head>
-        <title>AidRelay · Instant Verified Aid</title>
+        <title>OpenRelief · Instant Verified Aid</title>
         <meta
           name="description"
           content="Connect donors with disaster zones through verified aid distribution"
@@ -62,7 +62,7 @@ export default function LoginPage() {
           <div className="max-w-7xl mx-auto">
             <div className="text-center">
               <h1 className="text-4xl md:text-6xl font-bold text-white mb-4">
-                AidRelay
+                OpenRelief
               </h1>
               <p className="text-xl md:text-2xl text-orange-400 mb-6">
                 Instant Verified Aid
@@ -83,7 +83,7 @@ export default function LoginPage() {
         </div>
 
         {/* Globe Component */}
-        <AidGlobe />
+        <OpenReliefGlobe />
 
         {/* Bottom Info Overlay */}
         <div className="absolute bottom-0 left-0 right-0 z-10 bg-gradient-to-t from-slate-900/80 to-transparent p-6">
@@ -92,17 +92,29 @@ export default function LoginPage() {
               <p className="text-sm text-slate-400 mb-2">
                 Click on highlighted disaster zones to donate or claim aid
               </p>
-              <div className="flex justify-center space-x-8 text-xs text-slate-500">
+              <div className="flex justify-center space-x-4 text-xs text-slate-500">
                 <div className="flex items-center">
-                  <div className="w-3 h-3 bg-red-500 rounded-full mr-2"></div>
-                  Critical Zones
+                  <div className="w-3 h-3 bg-red-600 rounded-full mr-1"></div>
+                  War
                 </div>
                 <div className="flex items-center">
-                  <div className="w-3 h-3 bg-orange-500 rounded-full mr-2"></div>
-                  High Priority
+                  <div className="w-3 h-3 bg-orange-600 rounded-full mr-1"></div>
+                  Earthquake
                 </div>
                 <div className="flex items-center">
-                  <div className="w-3 h-3 bg-green-500 rounded-full mr-2"></div>
+                  <div className="w-3 h-3 bg-purple-600 rounded-full mr-1"></div>
+                  Typhoon
+                </div>
+                <div className="flex items-center">
+                  <div className="w-3 h-3 bg-blue-600 rounded-full mr-1"></div>
+                  Flood
+                </div>
+                <div className="flex items-center">
+                  <div className="w-3 h-3 bg-yellow-600 rounded-full mr-1"></div>
+                  Fire
+                </div>
+                <div className="flex items-center">
+                  <div className="w-3 h-3 bg-green-500 rounded-full mr-1"></div>
                   Donor Arcs
                 </div>
               </div>

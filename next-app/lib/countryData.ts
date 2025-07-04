@@ -2,16 +2,7 @@
 export interface CountryData {
   id: string;
   name: string;
-  type: "Feature";
-  geometry: {
-    type: "Polygon";
-    coordinates: number[][][];
-  };
-  properties: {
-    name: string;
-    description: string;
-    urgency: string;
-  };
+  coordinates: number[][];
   center: [number, number];
   color: string;
   altitude: number;
@@ -19,164 +10,377 @@ export interface CountryData {
   urgency: string;
 }
 
-// Simplified but more realistic country boundaries
-export const DISASTER_ZONES: CountryData[] = [
+// GeoJSON Feature structure for disaster zones
+export interface DisasterZoneFeature {
+  type: "Feature";
+  properties: {
+    id: string;
+    name: string;
+    description: string;
+    disasterType:
+      | "earthquake"
+      | "flood"
+      | "fire"
+      | "typhoon"
+      | "hurricane"
+      | "war";
+    severity: "high" | "medium" | "low";
+    color: string;
+    altitude: number;
+  };
+  geometry: {
+    type: "Polygon";
+    coordinates: number[][][];
+  };
+}
+
+// Color assignment function based on disaster type and severity
+export const getDisasterColor = (
+  type: "earthquake" | "flood" | "fire" | "typhoon" | "hurricane" | "war",
+  severity: "high" | "medium" | "low"
+): string => {
+  switch (type) {
+    case "war":
+      switch (severity) {
+        case "high":
+          return "#dc2626"; // Dark red
+        case "medium":
+          return "#ef4444"; // Medium red
+        case "low":
+          return "#f87171"; // Light red
+        default:
+          return "#dc2626";
+      }
+    case "earthquake":
+      switch (severity) {
+        case "high":
+          return "#ea580c"; // Dark orange
+        case "medium":
+          return "#f97316"; // Medium orange
+        case "low":
+          return "#fb923c"; // Light orange
+        default:
+          return "#ea580c";
+      }
+    case "flood":
+      switch (severity) {
+        case "high":
+          return "#1d4ed8"; // Dark blue
+        case "medium":
+          return "#3b82f6"; // Medium blue
+        case "low":
+          return "#60a5fa"; // Light blue
+        default:
+          return "#1d4ed8";
+      }
+    case "fire":
+      switch (severity) {
+        case "high":
+          return "#b91c1c"; // Dark red-orange
+        case "medium":
+          return "#dc2626"; // Medium red-orange
+        case "low":
+          return "#f59e0b"; // Light orange-yellow
+        default:
+          return "#b91c1c";
+      }
+    case "typhoon":
+    case "hurricane":
+      switch (severity) {
+        case "high":
+          return "#7c3aed"; // Dark purple
+        case "medium":
+          return "#8b5cf6"; // Medium purple
+        case "low":
+          return "#a78bfa"; // Light purple
+        default:
+          return "#7c3aed";
+      }
+    default:
+      return "#6b7280"; // Gray fallback
+  }
+};
+
+// Disaster zones with accurate coordinates from countries.geojson
+export const DISASTER_ZONES: DisasterZoneFeature[] = [
   {
-    id: "haiti",
-    name: "Haiti",
     type: "Feature",
-    geometry: {
-      type: "Polygon",
-      coordinates: [
-        [
-          [-74.478, 18.042],
-          [-74.359, 18.667],
-          [-73.449, 19.645],
-          [-72.334, 19.915],
-          [-71.712, 19.714],
-          [-71.587, 19.312],
-          [-71.708, 18.785],
-          [-71.945, 18.616],
-          [-72.273, 18.508],
-          [-72.57, 18.19],
-          [-72.844, 18.143],
-          [-73.454, 18.218],
-          [-73.922, 18.03],
-          [-74.478, 18.042],
-        ],
-      ],
-    },
     properties: {
+      id: "haiti",
       name: "Haiti",
       description: "Earthquake Recovery Aid",
-      urgency: "Critical",
+      disasterType: "earthquake",
+      severity: "high",
+      color: getDisasterColor("earthquake", "high"),
+      altitude: 0.03,
     },
-    center: [-72.285, 18.971],
-    color: "rgba(255, 50, 50, 0.7)",
-    altitude: 0.015,
-    description: "Earthquake Recovery Aid",
-    urgency: "Critical",
-  },
-  {
-    id: "philippines",
-    name: "Philippines",
-    type: "Feature",
     geometry: {
       type: "Polygon",
       coordinates: [
         [
-          [119.5, 4.5],
-          [119.5, 8.0],
-          [120.0, 10.0],
-          [121.0, 11.5],
-          [122.0, 13.0],
-          [123.5, 13.5],
-          [124.0, 12.0],
-          [125.0, 11.0],
-          [126.0, 9.0],
-          [126.5, 7.0],
-          [125.5, 6.0],
-          [124.0, 4.5],
-          [122.5, 4.0],
-          [121.0, 4.2],
-          [119.5, 4.5],
+          [-71.712361, 19.714456],
+          [-71.624873, 19.169838],
+          [-71.701303, 18.785417],
+          [-71.945112, 18.6169],
+          [-71.687738, 18.31666],
+          [-71.708305, 18.044997],
+          [-72.372476, 18.214961],
+          [-72.844411, 18.145611],
+          [-73.454555, 18.217906],
+          [-73.922433, 18.030993],
+          [-74.458034, 18.34255],
+          [-74.369925, 18.664908],
+          [-73.449542, 18.526053],
+          [-72.694937, 18.445799],
+          [-72.334882, 18.668422],
+          [-72.79165, 19.101625],
+          [-72.784105, 19.483591],
+          [-73.415022, 19.639551],
+          [-73.189791, 19.915684],
+          [-72.579673, 19.871501],
+          [-71.712361, 19.714456],
         ],
       ],
     },
+  },
+  {
+    type: "Feature",
     properties: {
-      name: "Philippines",
+      id: "philippines_luzon",
+      name: "Philippines (Luzon)",
       description: "Typhoon Relief",
-      urgency: "High",
+      disasterType: "typhoon",
+      severity: "high",
+      color: getDisasterColor("typhoon", "high"),
+      altitude: 0.03,
     },
-    center: [121.0, 12.8],
-    color: "rgba(255, 100, 50, 0.7)",
-    altitude: 0.015,
-    description: "Typhoon Relief",
-    urgency: "High",
-  },
-  {
-    id: "turkey",
-    name: "Turkey",
-    type: "Feature",
     geometry: {
       type: "Polygon",
       coordinates: [
         [
-          [26.0, 35.8],
-          [28.0, 36.0],
-          [31.0, 36.2],
-          [33.0, 36.0],
-          [35.0, 36.1],
-          [36.0, 35.8],
-          [38.0, 36.9],
-          [40.0, 37.0],
-          [42.0, 37.5],
-          [44.0, 39.0],
-          [42.0, 41.0],
-          [40.0, 42.0],
-          [38.0, 41.5],
-          [36.0, 41.2],
-          [34.0, 41.0],
-          [32.0, 40.8],
-          [30.0, 40.5],
-          [28.0, 40.2],
-          [26.0, 40.0],
-          [26.0, 35.8],
+          [121.321308, 18.504065],
+          [121.937601, 18.218552],
+          [122.246006, 18.47895],
+          [122.336957, 18.224883],
+          [122.174279, 17.810283],
+          [121.739091, 17.496051],
+          [121.739091, 17.01287],
+          [122.25747, 16.226551],
+          [122.706032, 15.937671],
+          [123.072498, 15.70669],
+          [123.072498, 15.226872],
+          [122.880127, 14.867804],
+          [122.880127, 14.417936],
+          [122.519287, 14.2],
+          [121.50806, 14.05542],
+          [121.014404, 14.273882],
+          [120.695801, 14.273882],
+          [120.2969, 14.748208],
+          [120.0, 15.5],
+          [119.921265, 16.0],
+          [120.296326, 16.5],
+          [120.296326, 17.0],
+          [120.8, 17.5],
+          [121.321308, 18.504065],
         ],
       ],
     },
+  },
+  {
+    type: "Feature",
     properties: {
-      name: "Turkey",
+      id: "turkey_south",
+      name: "Turkey (Southern Region)",
       description: "Earthquake Emergency Aid",
-      urgency: "Critical",
+      disasterType: "earthquake",
+      severity: "high",
+      color: getDisasterColor("earthquake", "high"),
+      altitude: 0.03,
     },
-    center: [35.0, 38.5],
-    color: "rgba(255, 120, 50, 0.7)",
-    altitude: 0.015,
-    description: "Earthquake Emergency Aid",
-    urgency: "Critical",
-  },
-  {
-    id: "ukraine",
-    name: "Ukraine",
-    type: "Feature",
     geometry: {
       type: "Polygon",
       coordinates: [
         [
-          [22.0, 48.0],
-          [24.0, 48.2],
-          [26.0, 48.0],
-          [28.0, 48.5],
-          [30.0, 48.2],
-          [32.0, 48.0],
-          [34.0, 48.5],
-          [36.0, 49.0],
-          [38.0, 49.2],
-          [40.0, 49.5],
-          [40.0, 50.5],
-          [38.0, 51.0],
-          [36.0, 51.2],
-          [34.0, 51.5],
-          [32.0, 51.2],
-          [30.0, 51.0],
-          [28.0, 50.8],
-          [26.0, 50.5],
-          [24.0, 50.2],
-          [22.0, 49.8],
-          [22.0, 48.0],
+          [35.782085, 36.274995],
+          [36.160822, 36.650606],
+          [35.550936, 36.565443],
+          [34.714553, 36.795532],
+          [34.026895, 36.21996],
+          [32.509158, 36.107564],
+          [31.699595, 36.644275],
+          [30.621625, 36.677865],
+          [30.391096, 36.262981],
+          [29.699976, 36.144357],
+          [28.732903, 36.676831],
+          [27.641187, 36.658822],
+          [27.048768, 37.653361],
+          [26.318218, 38.208133],
+          [26.8047, 38.98576],
+          [26.170785, 39.463612],
+          [27.28002, 40.420014],
+          [28.819978, 40.460011],
+          [29.240004, 41.219991],
+          [31.145934, 41.087622],
+          [32.347979, 41.736264],
+          [33.513283, 42.01896],
+          [35.167704, 42.040225],
+          [36.913127, 41.335358],
+          [38.347665, 40.948586],
+          [39.512607, 41.102763],
+          [40.373433, 41.013673],
+          [41.554084, 41.535656],
+          [42.619549, 41.583173],
+          [43.582746, 41.092143],
+          [43.752658, 40.740201],
+          [43.656436, 40.253564],
+          [44.400009, 40.005],
+          [44.79399, 39.713003],
+          [44.109225, 39.428136],
+          [44.421403, 38.281281],
+          [44.225756, 37.971584],
+          [44.77267, 37.17045],
+          [44.293452, 37.001514],
+          [43.942259, 37.256228],
+          [42.779126, 37.385264],
+          [42.349591, 37.229873],
+          [41.212089, 37.074352],
+          [40.673259, 37.091276],
+          [39.52258, 36.716054],
+          [38.699891, 36.712927],
+          [38.167727, 36.90121],
+          [37.066761, 36.623036],
+          [36.739494, 36.81752],
+          [36.685389, 36.259699],
+          [36.41755, 36.040617],
+          [36.149763, 35.821535],
+          [35.782085, 36.274995],
         ],
       ],
     },
+  },
+  {
+    type: "Feature",
     properties: {
-      name: "Ukraine",
+      id: "ukraine_east",
+      name: "Ukraine (Eastern Region)",
       description: "Humanitarian Crisis Support",
-      urgency: "Critical",
+      disasterType: "war",
+      severity: "high",
+      color: getDisasterColor("war", "high"),
+      altitude: 0.03,
     },
-    center: [31.0, 49.0],
-    color: "rgba(255, 150, 50, 0.7)",
-    altitude: 0.015,
-    description: "Humanitarian Crisis Support",
-    urgency: "Critical",
+    geometry: {
+      type: "Polygon",
+      coordinates: [
+        [
+          [40.06904, 49.60105],
+          [40.080789, 49.30743],
+          [39.67465, 48.78382],
+          [39.89562, 48.23241],
+          [39.738278, 47.898937],
+          [38.77057, 47.82562],
+          [38.255112, 47.5464],
+          [38.223538, 47.10219],
+          [37.425137, 47.022221],
+          [36.759855, 46.6987],
+          [35.823685, 46.645964],
+          [34.962342, 46.273197],
+          [35.012659, 45.737725],
+          [34.861792, 45.768182],
+          [34.732017, 45.965666],
+          [34.410402, 46.005162],
+          [33.699462, 46.219573],
+          [33.435988, 45.971917],
+          [33.298567, 46.080598],
+          [31.74414, 46.333348],
+          [31.675307, 46.706245],
+          [30.748749, 46.5831],
+          [30.377609, 46.03241],
+          [29.603289, 45.293308],
+          [29.149725, 45.464925],
+          [28.679779, 45.304031],
+          [28.233554, 45.488283],
+          [28.485269, 45.596907],
+          [28.659987, 45.939987],
+          [28.933717, 46.25883],
+          [28.862972, 46.437889],
+          [29.072107, 46.517678],
+          [29.170654, 46.379262],
+          [29.759972, 46.349988],
+          [30.024659, 46.423937],
+          [29.83821, 46.525326],
+          [29.908852, 46.674361],
+          [29.559674, 46.928583],
+          [29.415135, 47.346645],
+          [29.050868, 47.510227],
+          [29.122698, 47.849095],
+          [28.670891, 48.118149],
+          [28.259547, 48.155562],
+          [27.522537, 48.467119],
+          [26.857824, 48.368211],
+          [26.619337, 48.220726],
+          [26.19745, 48.220881],
+          [25.945941, 47.987149],
+          [25.207743, 47.891056],
+          [24.866317, 47.737526],
+          [24.402056, 47.981878],
+          [23.760958, 47.985598],
+          [23.142236, 48.096341],
+          [22.710531, 47.882194],
+          [22.64082, 48.15024],
+          [22.085608, 48.422264],
+          [22.280842, 48.825392],
+          [22.558138, 49.085738],
+          [22.776419, 49.027395],
+          [22.51845, 49.476774],
+          [23.426508, 50.308506],
+          [23.922757, 50.424881],
+          [24.029986, 50.705407],
+          [23.527071, 51.578454],
+          [24.005078, 51.617444],
+          [24.553106, 51.888461],
+          [25.327788, 51.910656],
+          [26.337959, 51.832289],
+          [27.454066, 51.592303],
+          [28.241615, 51.572227],
+          [28.617613, 51.427714],
+          [28.992835, 51.602044],
+          [29.254938, 51.368234],
+          [30.157364, 51.416138],
+          [30.555117, 51.319503],
+          [30.619454, 51.822806],
+          [30.927549, 52.042353],
+          [31.785992, 52.101678],
+          [32.15944, 52.06125],
+          [32.412058, 52.288695],
+          [32.715761, 52.238465],
+          [33.7527, 52.335075],
+          [34.391731, 51.768882],
+          [34.141978, 51.566413],
+          [34.224816, 51.255993],
+          [35.022183, 51.207572],
+          [35.37791, 50.77394],
+          [35.356116, 50.577197],
+          [36.626168, 50.225591],
+          [37.39346, 50.383953],
+          [38.010631, 49.915662],
+          [38.594988, 49.926462],
+          [40.06904, 49.60105],
+        ],
+      ],
+    },
   },
 ];
+
+// Helper function to get center coordinates from a polygon
+export const getPolygonCenter = (
+  feature: DisasterZoneFeature
+): [number, number] => {
+  const coords = feature.geometry.coordinates[0];
+  if (!coords || coords.length === 0) {
+    return [0, 0];
+  }
+  const lngSum = coords.reduce((sum, coord) => sum + (coord?.[0] || 0), 0);
+  const latSum = coords.reduce((sum, coord) => sum + (coord?.[1] || 0), 0);
+  return [lngSum / coords.length, latSum / coords.length];
+};
