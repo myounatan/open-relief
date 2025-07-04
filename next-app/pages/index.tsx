@@ -1,9 +1,19 @@
-import Portal from "../components/graphics/portal";
 import { useLogin } from "@privy-io/react-auth";
 import { PrivyClient } from "@privy-io/server-auth";
 import { GetServerSideProps } from "next";
+import dynamic from "next/dynamic";
 import Head from "next/head";
 import { useRouter } from "next/router";
+
+// Dynamically import AidGlobe to avoid SSR issues
+const AidGlobe = dynamic(() => import("../components/AidGlobe"), {
+  ssr: false,
+  loading: () => (
+    <div className="flex items-center justify-center h-screen bg-gradient-to-br from-slate-900 to-slate-800">
+      <div className="text-white text-xl">Loading Globe...</div>
+    </div>
+  ),
+});
 
 export const getServerSideProps: GetServerSideProps = async ({ req }) => {
   const cookieAuthToken = req.cookies["privy-token"];
@@ -39,22 +49,63 @@ export default function LoginPage() {
   return (
     <>
       <Head>
-        <title>Login · Privy</title>
+        <title>AidRelay · Instant Verified Aid</title>
+        <meta
+          name="description"
+          content="Connect donors with disaster zones through verified aid distribution"
+        />
       </Head>
 
-      <main className="flex min-h-screen min-w-full">
-        <div className="flex bg-privy-light-blue flex-1 p-6 justify-center items-center">
-          <div>
-            <div>
-              <Portal style={{ maxWidth: "100%", height: "auto" }} />
-            </div>
-            <div className="mt-6 flex justify-center text-center">
+      <main className="relative w-full h-screen overflow-hidden">
+        {/* Header Overlay */}
+        <div className="absolute top-0 left-0 right-0 z-10 bg-gradient-to-b from-slate-900/80 to-transparent p-6">
+          <div className="max-w-7xl mx-auto">
+            <div className="text-center">
+              <h1 className="text-4xl md:text-6xl font-bold text-white mb-4">
+                AidRelay
+              </h1>
+              <p className="text-xl md:text-2xl text-orange-400 mb-6">
+                Instant Verified Aid
+              </p>
+              <p className="text-lg text-slate-300 max-w-2xl mx-auto mb-8">
+                Connect donors directly with disaster zones through transparent,
+                verified aid distribution. See real-time impact across the
+                globe.
+              </p>
               <button
-                className="bg-violet-600 hover:bg-violet-700 py-3 px-6 text-white rounded-lg"
+                className="bg-orange-600 hover:bg-orange-700 py-3 px-8 text-white rounded-lg font-medium text-lg transition-colors shadow-lg"
                 onClick={login}
               >
-                Log in
+                Get Started
               </button>
+            </div>
+          </div>
+        </div>
+
+        {/* Globe Component */}
+        <AidGlobe />
+
+        {/* Bottom Info Overlay */}
+        <div className="absolute bottom-0 left-0 right-0 z-10 bg-gradient-to-t from-slate-900/80 to-transparent p-6">
+          <div className="max-w-7xl mx-auto">
+            <div className="text-center">
+              <p className="text-sm text-slate-400 mb-2">
+                Click on highlighted disaster zones to donate or claim aid
+              </p>
+              <div className="flex justify-center space-x-8 text-xs text-slate-500">
+                <div className="flex items-center">
+                  <div className="w-3 h-3 bg-red-500 rounded-full mr-2"></div>
+                  Critical Zones
+                </div>
+                <div className="flex items-center">
+                  <div className="w-3 h-3 bg-orange-500 rounded-full mr-2"></div>
+                  High Priority
+                </div>
+                <div className="flex items-center">
+                  <div className="w-3 h-3 bg-green-500 rounded-full mr-2"></div>
+                  Donor Arcs
+                </div>
+              </div>
             </div>
           </div>
         </div>

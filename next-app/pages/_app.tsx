@@ -1,7 +1,7 @@
-import "../styles/globals.css";
+import { PrivyProvider } from "@privy-io/react-auth";
 import type { AppProps } from "next/app";
 import Head from "next/head";
-import { PrivyProvider } from "@privy-io/react-auth";
+import "../styles/globals.css";
 
 function MyApp({ Component, pageProps }: AppProps) {
   return (
@@ -44,7 +44,7 @@ function MyApp({ Component, pageProps }: AppProps) {
         appId={process.env.NEXT_PUBLIC_PRIVY_APP_ID || ""}
         config={{
           embeddedWallets: {
-            createOnLogin: "all-users",
+            createOnLogin: "users-without-wallets",
           },
         }}
       >
