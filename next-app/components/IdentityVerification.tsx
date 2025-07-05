@@ -4,6 +4,7 @@ import { SelfAppBuilder, SelfQRcodeWrapper } from "@selfxyz/qrcode";
 import React, { useEffect, useState } from "react";
 import { DisasterZoneFeature } from "../lib/countryData";
 import { shouldUseMobileFlow } from "../lib/deviceDetection";
+import { encodePacked } from "viem";
 
 interface IdentityVerificationProps {
   isOpen: boolean;
@@ -54,10 +55,10 @@ const IdentityVerification: React.FC<IdentityVerificationProps> = ({
           endpointType: "staging_celo",
           endpoint: `${process.env.NEXT_PUBLIC_IDENTITY_VERIFIER_ADDRESS}`,
           logoBase64: "https://i.postimg.cc/mrmVf9hm/self.png", // Could add your logo here
-          userId: `${userIdentifier}`,
+          userId: `${userIdentifier}`, // abi encode disasterZone.properties.id from int to bytes
           userIdType: "hex", // Using blockchain address
           version: 2,
-          userDefinedData: "Bonjour Cannes!",
+          userDefinedData: "0x" + Buffer.from(disasterZone.properties.id).toString('hex').padEnd(128, '0'),
           disclosures: {
             // what you want to verify from users' identity
             // minimumAge: 0,

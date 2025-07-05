@@ -50,7 +50,6 @@ export declare namespace IdentityVerifier {
 export interface IdentityVerifierInterface extends Interface {
   getFunction(
     nameOrSignature:
-      | "DOMAIN_SEPARATOR"
       | "VERIFICATION_MESSAGE_TYPEHASH"
       | "adminAddress"
       | "adminSignatures"
@@ -59,14 +58,21 @@ export interface IdentityVerifierInterface extends Interface {
       | "getConfigId()"
       | "getConfigId(bytes32,bytes32,bytes)"
       | "getMessageHash"
+      | "getMessageHashToSign"
       | "getVerificationData"
+      | "getVerifiedUserAddress"
       | "isUserVerified"
+      | "messageHashes"
       | "onVerificationSuccess"
       | "owner"
+      | "reliefPoolsContract"
       | "renounceOwnership"
       | "scope"
+      | "setAdminSignature"
+      | "setReliefPoolsContract"
       | "setScope"
       | "transferOwnership"
+      | "userIdentifierToAddress"
       | "verifiedUsers"
       | "verifyAdminSignature"
       | "verifySelfProof"
@@ -81,10 +87,6 @@ export interface IdentityVerifierInterface extends Interface {
   ): EventFragment;
 
   encodeFunctionData(
-    functionFragment: "DOMAIN_SEPARATOR",
-    values?: undefined
-  ): string;
-  encodeFunctionData(
     functionFragment: "VERIFICATION_MESSAGE_TYPEHASH",
     values?: undefined
   ): string;
@@ -94,12 +96,12 @@ export interface IdentityVerifierInterface extends Interface {
   ): string;
   encodeFunctionData(
     functionFragment: "adminSignatures",
-    values: [AddressLike]
+    values: [BigNumberish]
   ): string;
   encodeFunctionData(functionFragment: "configId", values?: undefined): string;
   encodeFunctionData(
     functionFragment: "getAdminSignature",
-    values: [AddressLike]
+    values: [BigNumberish]
   ): string;
   encodeFunctionData(
     functionFragment: "getConfigId()",
@@ -111,15 +113,27 @@ export interface IdentityVerifierInterface extends Interface {
   ): string;
   encodeFunctionData(
     functionFragment: "getMessageHash",
-    values: [AddressLike, BigNumberish, BigNumberish, string, BigNumberish]
+    values: [BigNumberish, BigNumberish, string, BigNumberish]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "getMessageHashToSign",
+    values: [BigNumberish]
   ): string;
   encodeFunctionData(
     functionFragment: "getVerificationData",
-    values: [AddressLike]
+    values: [BigNumberish]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "getVerifiedUserAddress",
+    values: [BigNumberish]
   ): string;
   encodeFunctionData(
     functionFragment: "isUserVerified",
-    values: [AddressLike]
+    values: [BigNumberish]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "messageHashes",
+    values: [BigNumberish]
   ): string;
   encodeFunctionData(
     functionFragment: "onVerificationSuccess",
@@ -127,10 +141,22 @@ export interface IdentityVerifierInterface extends Interface {
   ): string;
   encodeFunctionData(functionFragment: "owner", values?: undefined): string;
   encodeFunctionData(
+    functionFragment: "reliefPoolsContract",
+    values?: undefined
+  ): string;
+  encodeFunctionData(
     functionFragment: "renounceOwnership",
     values?: undefined
   ): string;
   encodeFunctionData(functionFragment: "scope", values?: undefined): string;
+  encodeFunctionData(
+    functionFragment: "setAdminSignature",
+    values: [BigNumberish, BytesLike]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "setReliefPoolsContract",
+    values: [AddressLike]
+  ): string;
   encodeFunctionData(
     functionFragment: "setScope",
     values: [BigNumberish]
@@ -140,29 +166,22 @@ export interface IdentityVerifierInterface extends Interface {
     values: [AddressLike]
   ): string;
   encodeFunctionData(
+    functionFragment: "userIdentifierToAddress",
+    values: [BigNumberish]
+  ): string;
+  encodeFunctionData(
     functionFragment: "verifiedUsers",
-    values: [AddressLike]
+    values: [BigNumberish]
   ): string;
   encodeFunctionData(
     functionFragment: "verifyAdminSignature",
-    values: [
-      AddressLike,
-      BigNumberish,
-      BigNumberish,
-      string,
-      BigNumberish,
-      BytesLike
-    ]
+    values: [BigNumberish, BigNumberish, string, BigNumberish, BytesLike]
   ): string;
   encodeFunctionData(
     functionFragment: "verifySelfProof",
     values: [BytesLike, BytesLike]
   ): string;
 
-  decodeFunctionResult(
-    functionFragment: "DOMAIN_SEPARATOR",
-    data: BytesLike
-  ): Result;
   decodeFunctionResult(
     functionFragment: "VERIFICATION_MESSAGE_TYPEHASH",
     data: BytesLike
@@ -193,11 +212,23 @@ export interface IdentityVerifierInterface extends Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(
+    functionFragment: "getMessageHashToSign",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
     functionFragment: "getVerificationData",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
+    functionFragment: "getVerifiedUserAddress",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
     functionFragment: "isUserVerified",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "messageHashes",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -206,13 +237,29 @@ export interface IdentityVerifierInterface extends Interface {
   ): Result;
   decodeFunctionResult(functionFragment: "owner", data: BytesLike): Result;
   decodeFunctionResult(
+    functionFragment: "reliefPoolsContract",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
     functionFragment: "renounceOwnership",
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "scope", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "setAdminSignature",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "setReliefPoolsContract",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(functionFragment: "setScope", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "transferOwnership",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "userIdentifierToAddress",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -231,17 +278,17 @@ export interface IdentityVerifierInterface extends Interface {
 
 export namespace AdminSignatureGeneratedEvent {
   export type InputTuple = [
-    userAddress: AddressLike,
+    nullifier: BigNumberish,
     signature: BytesLike,
     timestamp: BigNumberish
   ];
   export type OutputTuple = [
-    userAddress: string,
+    nullifier: bigint,
     signature: string,
     timestamp: bigint
   ];
   export interface OutputObject {
-    userAddress: string;
+    nullifier: bigint;
     signature: string;
     timestamp: bigint;
   }
@@ -278,24 +325,27 @@ export namespace ScopeUpdatedEvent {
 
 export namespace UserVerifiedEvent {
   export type InputTuple = [
-    userAddress: AddressLike,
     nullifier: BigNumberish,
     userIdentifier: BigNumberish,
     nationality: string,
+    userAddress: AddressLike,
+    reliefPoolId: string,
     timestamp: BigNumberish
   ];
   export type OutputTuple = [
-    userAddress: string,
     nullifier: bigint,
     userIdentifier: bigint,
     nationality: string,
+    userAddress: string,
+    reliefPoolId: string,
     timestamp: bigint
   ];
   export interface OutputObject {
-    userAddress: string;
     nullifier: bigint;
     userIdentifier: bigint;
     nationality: string;
+    userAddress: string;
+    reliefPoolId: string;
     timestamp: bigint;
   }
   export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
@@ -347,18 +397,16 @@ export interface IdentityVerifier extends BaseContract {
     event?: TCEvent
   ): Promise<this>;
 
-  DOMAIN_SEPARATOR: TypedContractMethod<[], [string], "view">;
-
   VERIFICATION_MESSAGE_TYPEHASH: TypedContractMethod<[], [string], "view">;
 
   adminAddress: TypedContractMethod<[], [string], "view">;
 
-  adminSignatures: TypedContractMethod<[arg0: AddressLike], [string], "view">;
+  adminSignatures: TypedContractMethod<[arg0: BigNumberish], [string], "view">;
 
   configId: TypedContractMethod<[], [string], "view">;
 
   getAdminSignature: TypedContractMethod<
-    [userAddress: AddressLike],
+    [nullifier: BigNumberish],
     [string],
     "view"
   >;
@@ -373,7 +421,6 @@ export interface IdentityVerifier extends BaseContract {
 
   getMessageHash: TypedContractMethod<
     [
-      userAddress: AddressLike,
       nullifier: BigNumberish,
       userIdentifier: BigNumberish,
       nationality: string,
@@ -383,17 +430,31 @@ export interface IdentityVerifier extends BaseContract {
     "view"
   >;
 
+  getMessageHashToSign: TypedContractMethod<
+    [nullifier: BigNumberish],
+    [string],
+    "view"
+  >;
+
   getVerificationData: TypedContractMethod<
-    [userAddress: AddressLike],
+    [nullifier: BigNumberish],
     [IdentityVerifier.VerificationDataStructOutput],
     "view"
   >;
 
+  getVerifiedUserAddress: TypedContractMethod<
+    [nullifier: BigNumberish],
+    [string],
+    "view"
+  >;
+
   isUserVerified: TypedContractMethod<
-    [userAddress: AddressLike],
+    [nullifier: BigNumberish],
     [boolean],
     "view"
   >;
+
+  messageHashes: TypedContractMethod<[arg0: BigNumberish], [string], "view">;
 
   onVerificationSuccess: TypedContractMethod<
     [output: BytesLike, userData: BytesLike],
@@ -403,9 +464,23 @@ export interface IdentityVerifier extends BaseContract {
 
   owner: TypedContractMethod<[], [string], "view">;
 
+  reliefPoolsContract: TypedContractMethod<[], [string], "view">;
+
   renounceOwnership: TypedContractMethod<[], [void], "nonpayable">;
 
   scope: TypedContractMethod<[], [bigint], "view">;
+
+  setAdminSignature: TypedContractMethod<
+    [nullifier: BigNumberish, signature: BytesLike],
+    [void],
+    "nonpayable"
+  >;
+
+  setReliefPoolsContract: TypedContractMethod<
+    [_reliefPoolsContract: AddressLike],
+    [void],
+    "nonpayable"
+  >;
 
   setScope: TypedContractMethod<[_scope: BigNumberish], [void], "nonpayable">;
 
@@ -415,8 +490,14 @@ export interface IdentityVerifier extends BaseContract {
     "nonpayable"
   >;
 
+  userIdentifierToAddress: TypedContractMethod<
+    [userIdentifier: BigNumberish],
+    [string],
+    "view"
+  >;
+
   verifiedUsers: TypedContractMethod<
-    [arg0: AddressLike],
+    [arg0: BigNumberish],
     [
       [bigint, bigint, string, bigint, boolean] & {
         nullifier: bigint;
@@ -431,7 +512,6 @@ export interface IdentityVerifier extends BaseContract {
 
   verifyAdminSignature: TypedContractMethod<
     [
-      userAddress: AddressLike,
       nullifier: BigNumberish,
       userIdentifier: BigNumberish,
       nationality: string,
@@ -453,9 +533,6 @@ export interface IdentityVerifier extends BaseContract {
   ): T;
 
   getFunction(
-    nameOrSignature: "DOMAIN_SEPARATOR"
-  ): TypedContractMethod<[], [string], "view">;
-  getFunction(
     nameOrSignature: "VERIFICATION_MESSAGE_TYPEHASH"
   ): TypedContractMethod<[], [string], "view">;
   getFunction(
@@ -463,13 +540,13 @@ export interface IdentityVerifier extends BaseContract {
   ): TypedContractMethod<[], [string], "view">;
   getFunction(
     nameOrSignature: "adminSignatures"
-  ): TypedContractMethod<[arg0: AddressLike], [string], "view">;
+  ): TypedContractMethod<[arg0: BigNumberish], [string], "view">;
   getFunction(
     nameOrSignature: "configId"
   ): TypedContractMethod<[], [string], "view">;
   getFunction(
     nameOrSignature: "getAdminSignature"
-  ): TypedContractMethod<[userAddress: AddressLike], [string], "view">;
+  ): TypedContractMethod<[nullifier: BigNumberish], [string], "view">;
   getFunction(
     nameOrSignature: "getConfigId()"
   ): TypedContractMethod<[], [string], "view">;
@@ -484,7 +561,6 @@ export interface IdentityVerifier extends BaseContract {
     nameOrSignature: "getMessageHash"
   ): TypedContractMethod<
     [
-      userAddress: AddressLike,
       nullifier: BigNumberish,
       userIdentifier: BigNumberish,
       nationality: string,
@@ -494,15 +570,24 @@ export interface IdentityVerifier extends BaseContract {
     "view"
   >;
   getFunction(
+    nameOrSignature: "getMessageHashToSign"
+  ): TypedContractMethod<[nullifier: BigNumberish], [string], "view">;
+  getFunction(
     nameOrSignature: "getVerificationData"
   ): TypedContractMethod<
-    [userAddress: AddressLike],
+    [nullifier: BigNumberish],
     [IdentityVerifier.VerificationDataStructOutput],
     "view"
   >;
   getFunction(
+    nameOrSignature: "getVerifiedUserAddress"
+  ): TypedContractMethod<[nullifier: BigNumberish], [string], "view">;
+  getFunction(
     nameOrSignature: "isUserVerified"
-  ): TypedContractMethod<[userAddress: AddressLike], [boolean], "view">;
+  ): TypedContractMethod<[nullifier: BigNumberish], [boolean], "view">;
+  getFunction(
+    nameOrSignature: "messageHashes"
+  ): TypedContractMethod<[arg0: BigNumberish], [string], "view">;
   getFunction(
     nameOrSignature: "onVerificationSuccess"
   ): TypedContractMethod<
@@ -514,11 +599,28 @@ export interface IdentityVerifier extends BaseContract {
     nameOrSignature: "owner"
   ): TypedContractMethod<[], [string], "view">;
   getFunction(
+    nameOrSignature: "reliefPoolsContract"
+  ): TypedContractMethod<[], [string], "view">;
+  getFunction(
     nameOrSignature: "renounceOwnership"
   ): TypedContractMethod<[], [void], "nonpayable">;
   getFunction(
     nameOrSignature: "scope"
   ): TypedContractMethod<[], [bigint], "view">;
+  getFunction(
+    nameOrSignature: "setAdminSignature"
+  ): TypedContractMethod<
+    [nullifier: BigNumberish, signature: BytesLike],
+    [void],
+    "nonpayable"
+  >;
+  getFunction(
+    nameOrSignature: "setReliefPoolsContract"
+  ): TypedContractMethod<
+    [_reliefPoolsContract: AddressLike],
+    [void],
+    "nonpayable"
+  >;
   getFunction(
     nameOrSignature: "setScope"
   ): TypedContractMethod<[_scope: BigNumberish], [void], "nonpayable">;
@@ -526,9 +628,12 @@ export interface IdentityVerifier extends BaseContract {
     nameOrSignature: "transferOwnership"
   ): TypedContractMethod<[newOwner: AddressLike], [void], "nonpayable">;
   getFunction(
+    nameOrSignature: "userIdentifierToAddress"
+  ): TypedContractMethod<[userIdentifier: BigNumberish], [string], "view">;
+  getFunction(
     nameOrSignature: "verifiedUsers"
   ): TypedContractMethod<
-    [arg0: AddressLike],
+    [arg0: BigNumberish],
     [
       [bigint, bigint, string, bigint, boolean] & {
         nullifier: bigint;
@@ -544,7 +649,6 @@ export interface IdentityVerifier extends BaseContract {
     nameOrSignature: "verifyAdminSignature"
   ): TypedContractMethod<
     [
-      userAddress: AddressLike,
       nullifier: BigNumberish,
       userIdentifier: BigNumberish,
       nationality: string,
@@ -592,7 +696,7 @@ export interface IdentityVerifier extends BaseContract {
   >;
 
   filters: {
-    "AdminSignatureGenerated(address,bytes,uint256)": TypedContractEvent<
+    "AdminSignatureGenerated(uint256,bytes,uint256)": TypedContractEvent<
       AdminSignatureGeneratedEvent.InputTuple,
       AdminSignatureGeneratedEvent.OutputTuple,
       AdminSignatureGeneratedEvent.OutputObject
@@ -625,7 +729,7 @@ export interface IdentityVerifier extends BaseContract {
       ScopeUpdatedEvent.OutputObject
     >;
 
-    "UserVerified(address,uint256,uint256,string,uint256)": TypedContractEvent<
+    "UserVerified(uint256,uint256,string,address,string,uint256)": TypedContractEvent<
       UserVerifiedEvent.InputTuple,
       UserVerifiedEvent.OutputTuple,
       UserVerifiedEvent.OutputObject

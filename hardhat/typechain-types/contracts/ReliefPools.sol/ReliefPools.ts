@@ -75,7 +75,7 @@ export declare namespace ReliefPools {
   };
 
   export type ReliefPoolStruct = {
-    id: BigNumberish;
+    id: string;
     disasterType: BigNumberish;
     classification: BigNumberish;
     nationalityRequired: string;
@@ -88,7 +88,7 @@ export declare namespace ReliefPools {
   };
 
   export type ReliefPoolStructOutput = [
-    id: bigint,
+    id: string,
     disasterType: bigint,
     classification: bigint,
     nationalityRequired: string,
@@ -99,7 +99,7 @@ export declare namespace ReliefPools {
     totalAmountDonated: bigint,
     isActive: boolean
   ] & {
-    id: bigint;
+    id: string;
     disasterType: bigint;
     classification: bigint;
     nationalityRequired: string;
@@ -122,14 +122,15 @@ export interface ReliefPoolsInterface extends Interface {
       | "cctpMessageTransmitter"
       | "checkPersonClaimedFromPool"
       | "claimRelief"
-      | "claimReliefToSelf"
       | "createReliefPool"
       | "donate"
       | "emergencyWithdraw"
+      | "getAllPoolIds"
       | "getBeneficiary"
       | "getContractBalance"
       | "getDonor"
       | "getPersonClaimedPools"
+      | "getPoolIdByIndex"
       | "getReliefPool"
       | "getTotalPools"
       | "handleReceiveFinalizedMessage"
@@ -138,8 +139,8 @@ export interface ReliefPoolsInterface extends Interface {
       | "owner"
       | "personClaimedPools"
       | "poolBeneficiaries"
-      | "poolCounter"
       | "poolDonors"
+      | "poolIds"
       | "reliefPools"
       | "renounceOwnership"
       | "setCCTPMessageTransmitter"
@@ -180,46 +181,38 @@ export interface ReliefPoolsInterface extends Interface {
   ): string;
   encodeFunctionData(
     functionFragment: "checkPersonClaimedFromPool",
-    values: [BigNumberish, BigNumberish]
+    values: [string, BigNumberish]
   ): string;
   encodeFunctionData(
     functionFragment: "claimRelief",
     values: [
-      BigNumberish,
+      string,
       BigNumberish,
       BigNumberish,
       string,
       BigNumberish,
-      AddressLike,
-      BytesLike
-    ]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "claimReliefToSelf",
-    values: [
-      BigNumberish,
-      BigNumberish,
-      BigNumberish,
-      string,
-      BigNumberish,
-      BytesLike
+      AddressLike
     ]
   ): string;
   encodeFunctionData(
     functionFragment: "createReliefPool",
-    values: [BigNumberish, BigNumberish, string, BigNumberish]
+    values: [string, BigNumberish, BigNumberish, string, BigNumberish]
   ): string;
   encodeFunctionData(
     functionFragment: "donate",
-    values: [BigNumberish, BigNumberish, string]
+    values: [string, BigNumberish, string]
   ): string;
   encodeFunctionData(
     functionFragment: "emergencyWithdraw",
     values: [BigNumberish]
   ): string;
   encodeFunctionData(
+    functionFragment: "getAllPoolIds",
+    values?: undefined
+  ): string;
+  encodeFunctionData(
     functionFragment: "getBeneficiary",
-    values: [BigNumberish, AddressLike]
+    values: [string, AddressLike]
   ): string;
   encodeFunctionData(
     functionFragment: "getContractBalance",
@@ -227,15 +220,19 @@ export interface ReliefPoolsInterface extends Interface {
   ): string;
   encodeFunctionData(
     functionFragment: "getDonor",
-    values: [BigNumberish, AddressLike]
+    values: [string, AddressLike]
   ): string;
   encodeFunctionData(
     functionFragment: "getPersonClaimedPools",
     values: [BigNumberish]
   ): string;
   encodeFunctionData(
-    functionFragment: "getReliefPool",
+    functionFragment: "getPoolIdByIndex",
     values: [BigNumberish]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "getReliefPool",
+    values: [string]
   ): string;
   encodeFunctionData(
     functionFragment: "getTotalPools",
@@ -251,7 +248,7 @@ export interface ReliefPoolsInterface extends Interface {
   ): string;
   encodeFunctionData(
     functionFragment: "hasPersonClaimedFromPool",
-    values: [BigNumberish, BigNumberish]
+    values: [string, BigNumberish]
   ): string;
   encodeFunctionData(functionFragment: "owner", values?: undefined): string;
   encodeFunctionData(
@@ -260,20 +257,17 @@ export interface ReliefPoolsInterface extends Interface {
   ): string;
   encodeFunctionData(
     functionFragment: "poolBeneficiaries",
-    values: [BigNumberish, AddressLike]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "poolCounter",
-    values?: undefined
+    values: [string, AddressLike]
   ): string;
   encodeFunctionData(
     functionFragment: "poolDonors",
-    values: [BigNumberish, AddressLike]
+    values: [string, AddressLike]
   ): string;
   encodeFunctionData(
-    functionFragment: "reliefPools",
+    functionFragment: "poolIds",
     values: [BigNumberish]
   ): string;
+  encodeFunctionData(functionFragment: "reliefPools", values: [string]): string;
   encodeFunctionData(
     functionFragment: "renounceOwnership",
     values?: undefined
@@ -284,7 +278,7 @@ export interface ReliefPoolsInterface extends Interface {
   ): string;
   encodeFunctionData(
     functionFragment: "togglePoolStatus",
-    values: [BigNumberish]
+    values: [string]
   ): string;
   encodeFunctionData(
     functionFragment: "transferOwnership",
@@ -293,14 +287,7 @@ export interface ReliefPoolsInterface extends Interface {
   encodeFunctionData(functionFragment: "usdcToken", values?: undefined): string;
   encodeFunctionData(
     functionFragment: "verifyAdminSignature",
-    values: [
-      AddressLike,
-      BigNumberish,
-      BigNumberish,
-      string,
-      BigNumberish,
-      BytesLike
-    ]
+    values: [BigNumberish, BigNumberish, string, BigNumberish, BytesLike]
   ): string;
 
   decodeFunctionResult(
@@ -332,16 +319,16 @@ export interface ReliefPoolsInterface extends Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(
-    functionFragment: "claimReliefToSelf",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
     functionFragment: "createReliefPool",
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "donate", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "emergencyWithdraw",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "getAllPoolIds",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -355,6 +342,10 @@ export interface ReliefPoolsInterface extends Interface {
   decodeFunctionResult(functionFragment: "getDonor", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "getPersonClaimedPools",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "getPoolIdByIndex",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -386,11 +377,8 @@ export interface ReliefPoolsInterface extends Interface {
     functionFragment: "poolBeneficiaries",
     data: BytesLike
   ): Result;
-  decodeFunctionResult(
-    functionFragment: "poolCounter",
-    data: BytesLike
-  ): Result;
   decodeFunctionResult(functionFragment: "poolDonors", data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: "poolIds", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "reliefPools",
     data: BytesLike
@@ -420,7 +408,7 @@ export interface ReliefPoolsInterface extends Interface {
 
 export namespace DonationMadeEvent {
   export type InputTuple = [
-    poolId: BigNumberish,
+    poolId: string,
     donor: AddressLike,
     sourceDomain: BigNumberish,
     amount: BigNumberish,
@@ -428,7 +416,7 @@ export namespace DonationMadeEvent {
     location: string
   ];
   export type OutputTuple = [
-    poolId: bigint,
+    poolId: string,
     donor: string,
     sourceDomain: bigint,
     amount: bigint,
@@ -436,7 +424,7 @@ export namespace DonationMadeEvent {
     location: string
   ];
   export interface OutputObject {
-    poolId: bigint;
+    poolId: string;
     donor: string;
     sourceDomain: bigint;
     amount: bigint;
@@ -451,7 +439,7 @@ export namespace DonationMadeEvent {
 
 export namespace FundsClaimedEvent {
   export type InputTuple = [
-    poolId: BigNumberish,
+    poolId: string,
     claimer: AddressLike,
     recipient: AddressLike,
     nullifier: BigNumberish,
@@ -461,7 +449,7 @@ export namespace FundsClaimedEvent {
     timestamp: BigNumberish
   ];
   export type OutputTuple = [
-    poolId: bigint,
+    poolId: string,
     claimer: string,
     recipient: string,
     nullifier: bigint,
@@ -471,7 +459,7 @@ export namespace FundsClaimedEvent {
     timestamp: bigint
   ];
   export interface OutputObject {
-    poolId: bigint;
+    poolId: string;
     claimer: string;
     recipient: string;
     nullifier: bigint;
@@ -500,10 +488,10 @@ export namespace OwnershipTransferredEvent {
 }
 
 export namespace PoolStatusChangedEvent {
-  export type InputTuple = [poolId: BigNumberish, isActive: boolean];
-  export type OutputTuple = [poolId: bigint, isActive: boolean];
+  export type InputTuple = [poolId: string, isActive: boolean];
+  export type OutputTuple = [poolId: string, isActive: boolean];
   export interface OutputObject {
-    poolId: bigint;
+    poolId: string;
     isActive: boolean;
   }
   export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
@@ -514,21 +502,21 @@ export namespace PoolStatusChangedEvent {
 
 export namespace ReliefPoolCreatedEvent {
   export type InputTuple = [
-    poolId: BigNumberish,
+    poolId: string,
     disasterType: BigNumberish,
     classification: BigNumberish,
     nationalityRequired: string,
     allocatedFundsPerPerson: BigNumberish
   ];
   export type OutputTuple = [
-    poolId: bigint,
+    poolId: string,
     disasterType: bigint,
     classification: bigint,
     nationalityRequired: string,
     allocatedFundsPerPerson: bigint
   ];
   export interface OutputObject {
-    poolId: bigint;
+    poolId: string;
     disasterType: bigint;
     classification: bigint;
     nationalityRequired: string;
@@ -598,33 +586,19 @@ export interface ReliefPools extends BaseContract {
   cctpMessageTransmitter: TypedContractMethod<[], [string], "view">;
 
   checkPersonClaimedFromPool: TypedContractMethod<
-    [poolId: BigNumberish, userIdentifier: BigNumberish],
+    [poolId: string, userIdentifier: BigNumberish],
     [boolean],
     "view"
   >;
 
   claimRelief: TypedContractMethod<
     [
-      poolId: BigNumberish,
+      poolId: string,
       nullifier: BigNumberish,
       userIdentifier: BigNumberish,
       nationality: string,
       timestamp: BigNumberish,
-      recipient: AddressLike,
-      adminSignature: BytesLike
-    ],
-    [void],
-    "nonpayable"
-  >;
-
-  claimReliefToSelf: TypedContractMethod<
-    [
-      poolId: BigNumberish,
-      nullifier: BigNumberish,
-      userIdentifier: BigNumberish,
-      nationality: string,
-      timestamp: BigNumberish,
-      adminSignature: BytesLike
+      recipient: AddressLike
     ],
     [void],
     "nonpayable"
@@ -632,17 +606,18 @@ export interface ReliefPools extends BaseContract {
 
   createReliefPool: TypedContractMethod<
     [
+      poolId: string,
       disasterType: BigNumberish,
       classification: BigNumberish,
       nationalityRequired: string,
       allocatedFundsPerPerson: BigNumberish
     ],
-    [bigint],
+    [string],
     "nonpayable"
   >;
 
   donate: TypedContractMethod<
-    [poolId: BigNumberish, amount: BigNumberish, location: string],
+    [poolId: string, amount: BigNumberish, location: string],
     [void],
     "nonpayable"
   >;
@@ -653,8 +628,10 @@ export interface ReliefPools extends BaseContract {
     "nonpayable"
   >;
 
+  getAllPoolIds: TypedContractMethod<[], [string[]], "view">;
+
   getBeneficiary: TypedContractMethod<
-    [poolId: BigNumberish, beneficiary: AddressLike],
+    [poolId: string, beneficiary: AddressLike],
     [ReliefPools.BeneficiaryStructOutput],
     "view"
   >;
@@ -662,19 +639,25 @@ export interface ReliefPools extends BaseContract {
   getContractBalance: TypedContractMethod<[], [bigint], "view">;
 
   getDonor: TypedContractMethod<
-    [poolId: BigNumberish, donor: AddressLike],
+    [poolId: string, donor: AddressLike],
     [ReliefPools.DonorStructOutput],
     "view"
   >;
 
   getPersonClaimedPools: TypedContractMethod<
     [userIdentifier: BigNumberish],
-    [bigint[]],
+    [string[]],
+    "view"
+  >;
+
+  getPoolIdByIndex: TypedContractMethod<
+    [index: BigNumberish],
+    [string],
     "view"
   >;
 
   getReliefPool: TypedContractMethod<
-    [poolId: BigNumberish],
+    [poolId: string],
     [ReliefPools.ReliefPoolStructOutput],
     "view"
   >;
@@ -704,7 +687,7 @@ export interface ReliefPools extends BaseContract {
   >;
 
   hasPersonClaimedFromPool: TypedContractMethod<
-    [arg0: BigNumberish, arg1: BigNumberish],
+    [arg0: string, arg1: BigNumberish],
     [boolean],
     "view"
   >;
@@ -713,12 +696,12 @@ export interface ReliefPools extends BaseContract {
 
   personClaimedPools: TypedContractMethod<
     [arg0: BigNumberish, arg1: BigNumberish],
-    [bigint],
+    [string],
     "view"
   >;
 
   poolBeneficiaries: TypedContractMethod<
-    [arg0: BigNumberish, arg1: AddressLike],
+    [arg0: string, arg1: AddressLike],
     [
       [bigint, bigint, string, bigint, bigint] & {
         nullifier: bigint;
@@ -731,10 +714,8 @@ export interface ReliefPools extends BaseContract {
     "view"
   >;
 
-  poolCounter: TypedContractMethod<[], [bigint], "view">;
-
   poolDonors: TypedContractMethod<
-    [arg0: BigNumberish, arg1: AddressLike],
+    [arg0: string, arg1: AddressLike],
     [
       [bigint, string, bigint, bigint, boolean, bigint, string] & {
         id: bigint;
@@ -749,11 +730,13 @@ export interface ReliefPools extends BaseContract {
     "view"
   >;
 
+  poolIds: TypedContractMethod<[arg0: BigNumberish], [string], "view">;
+
   reliefPools: TypedContractMethod<
-    [arg0: BigNumberish],
+    [arg0: string],
     [
       [
-        bigint,
+        string,
         bigint,
         bigint,
         string,
@@ -764,7 +747,7 @@ export interface ReliefPools extends BaseContract {
         bigint,
         boolean
       ] & {
-        id: bigint;
+        id: string;
         disasterType: bigint;
         classification: bigint;
         nationalityRequired: string;
@@ -787,11 +770,7 @@ export interface ReliefPools extends BaseContract {
     "nonpayable"
   >;
 
-  togglePoolStatus: TypedContractMethod<
-    [poolId: BigNumberish],
-    [void],
-    "nonpayable"
-  >;
+  togglePoolStatus: TypedContractMethod<[poolId: string], [void], "nonpayable">;
 
   transferOwnership: TypedContractMethod<
     [newOwner: AddressLike],
@@ -803,7 +782,6 @@ export interface ReliefPools extends BaseContract {
 
   verifyAdminSignature: TypedContractMethod<
     [
-      userAddress: AddressLike,
       nullifier: BigNumberish,
       userIdentifier: BigNumberish,
       nationality: string,
@@ -840,7 +818,7 @@ export interface ReliefPools extends BaseContract {
   getFunction(
     nameOrSignature: "checkPersonClaimedFromPool"
   ): TypedContractMethod<
-    [poolId: BigNumberish, userIdentifier: BigNumberish],
+    [poolId: string, userIdentifier: BigNumberish],
     [boolean],
     "view"
   >;
@@ -848,27 +826,12 @@ export interface ReliefPools extends BaseContract {
     nameOrSignature: "claimRelief"
   ): TypedContractMethod<
     [
-      poolId: BigNumberish,
+      poolId: string,
       nullifier: BigNumberish,
       userIdentifier: BigNumberish,
       nationality: string,
       timestamp: BigNumberish,
-      recipient: AddressLike,
-      adminSignature: BytesLike
-    ],
-    [void],
-    "nonpayable"
-  >;
-  getFunction(
-    nameOrSignature: "claimReliefToSelf"
-  ): TypedContractMethod<
-    [
-      poolId: BigNumberish,
-      nullifier: BigNumberish,
-      userIdentifier: BigNumberish,
-      nationality: string,
-      timestamp: BigNumberish,
-      adminSignature: BytesLike
+      recipient: AddressLike
     ],
     [void],
     "nonpayable"
@@ -877,18 +840,19 @@ export interface ReliefPools extends BaseContract {
     nameOrSignature: "createReliefPool"
   ): TypedContractMethod<
     [
+      poolId: string,
       disasterType: BigNumberish,
       classification: BigNumberish,
       nationalityRequired: string,
       allocatedFundsPerPerson: BigNumberish
     ],
-    [bigint],
+    [string],
     "nonpayable"
   >;
   getFunction(
     nameOrSignature: "donate"
   ): TypedContractMethod<
-    [poolId: BigNumberish, amount: BigNumberish, location: string],
+    [poolId: string, amount: BigNumberish, location: string],
     [void],
     "nonpayable"
   >;
@@ -896,9 +860,12 @@ export interface ReliefPools extends BaseContract {
     nameOrSignature: "emergencyWithdraw"
   ): TypedContractMethod<[amount: BigNumberish], [void], "nonpayable">;
   getFunction(
+    nameOrSignature: "getAllPoolIds"
+  ): TypedContractMethod<[], [string[]], "view">;
+  getFunction(
     nameOrSignature: "getBeneficiary"
   ): TypedContractMethod<
-    [poolId: BigNumberish, beneficiary: AddressLike],
+    [poolId: string, beneficiary: AddressLike],
     [ReliefPools.BeneficiaryStructOutput],
     "view"
   >;
@@ -908,17 +875,20 @@ export interface ReliefPools extends BaseContract {
   getFunction(
     nameOrSignature: "getDonor"
   ): TypedContractMethod<
-    [poolId: BigNumberish, donor: AddressLike],
+    [poolId: string, donor: AddressLike],
     [ReliefPools.DonorStructOutput],
     "view"
   >;
   getFunction(
     nameOrSignature: "getPersonClaimedPools"
-  ): TypedContractMethod<[userIdentifier: BigNumberish], [bigint[]], "view">;
+  ): TypedContractMethod<[userIdentifier: BigNumberish], [string[]], "view">;
+  getFunction(
+    nameOrSignature: "getPoolIdByIndex"
+  ): TypedContractMethod<[index: BigNumberish], [string], "view">;
   getFunction(
     nameOrSignature: "getReliefPool"
   ): TypedContractMethod<
-    [poolId: BigNumberish],
+    [poolId: string],
     [ReliefPools.ReliefPoolStructOutput],
     "view"
   >;
@@ -951,11 +921,7 @@ export interface ReliefPools extends BaseContract {
   >;
   getFunction(
     nameOrSignature: "hasPersonClaimedFromPool"
-  ): TypedContractMethod<
-    [arg0: BigNumberish, arg1: BigNumberish],
-    [boolean],
-    "view"
-  >;
+  ): TypedContractMethod<[arg0: string, arg1: BigNumberish], [boolean], "view">;
   getFunction(
     nameOrSignature: "owner"
   ): TypedContractMethod<[], [string], "view">;
@@ -963,13 +929,13 @@ export interface ReliefPools extends BaseContract {
     nameOrSignature: "personClaimedPools"
   ): TypedContractMethod<
     [arg0: BigNumberish, arg1: BigNumberish],
-    [bigint],
+    [string],
     "view"
   >;
   getFunction(
     nameOrSignature: "poolBeneficiaries"
   ): TypedContractMethod<
-    [arg0: BigNumberish, arg1: AddressLike],
+    [arg0: string, arg1: AddressLike],
     [
       [bigint, bigint, string, bigint, bigint] & {
         nullifier: bigint;
@@ -982,12 +948,9 @@ export interface ReliefPools extends BaseContract {
     "view"
   >;
   getFunction(
-    nameOrSignature: "poolCounter"
-  ): TypedContractMethod<[], [bigint], "view">;
-  getFunction(
     nameOrSignature: "poolDonors"
   ): TypedContractMethod<
-    [arg0: BigNumberish, arg1: AddressLike],
+    [arg0: string, arg1: AddressLike],
     [
       [bigint, string, bigint, bigint, boolean, bigint, string] & {
         id: bigint;
@@ -1002,12 +965,15 @@ export interface ReliefPools extends BaseContract {
     "view"
   >;
   getFunction(
+    nameOrSignature: "poolIds"
+  ): TypedContractMethod<[arg0: BigNumberish], [string], "view">;
+  getFunction(
     nameOrSignature: "reliefPools"
   ): TypedContractMethod<
-    [arg0: BigNumberish],
+    [arg0: string],
     [
       [
-        bigint,
+        string,
         bigint,
         bigint,
         string,
@@ -1018,7 +984,7 @@ export interface ReliefPools extends BaseContract {
         bigint,
         boolean
       ] & {
-        id: bigint;
+        id: string;
         disasterType: bigint;
         classification: bigint;
         nationalityRequired: string;
@@ -1044,7 +1010,7 @@ export interface ReliefPools extends BaseContract {
   >;
   getFunction(
     nameOrSignature: "togglePoolStatus"
-  ): TypedContractMethod<[poolId: BigNumberish], [void], "nonpayable">;
+  ): TypedContractMethod<[poolId: string], [void], "nonpayable">;
   getFunction(
     nameOrSignature: "transferOwnership"
   ): TypedContractMethod<[newOwner: AddressLike], [void], "nonpayable">;
@@ -1055,7 +1021,6 @@ export interface ReliefPools extends BaseContract {
     nameOrSignature: "verifyAdminSignature"
   ): TypedContractMethod<
     [
-      userAddress: AddressLike,
       nullifier: BigNumberish,
       userIdentifier: BigNumberish,
       nationality: string,
@@ -1103,7 +1068,7 @@ export interface ReliefPools extends BaseContract {
   >;
 
   filters: {
-    "DonationMade(uint256,address,uint32,uint256,uint256,string)": TypedContractEvent<
+    "DonationMade(string,address,uint32,uint256,uint256,string)": TypedContractEvent<
       DonationMadeEvent.InputTuple,
       DonationMadeEvent.OutputTuple,
       DonationMadeEvent.OutputObject
@@ -1114,7 +1079,7 @@ export interface ReliefPools extends BaseContract {
       DonationMadeEvent.OutputObject
     >;
 
-    "FundsClaimed(uint256,address,address,uint256,uint256,string,uint256,uint256)": TypedContractEvent<
+    "FundsClaimed(string,address,address,uint256,uint256,string,uint256,uint256)": TypedContractEvent<
       FundsClaimedEvent.InputTuple,
       FundsClaimedEvent.OutputTuple,
       FundsClaimedEvent.OutputObject
@@ -1136,7 +1101,7 @@ export interface ReliefPools extends BaseContract {
       OwnershipTransferredEvent.OutputObject
     >;
 
-    "PoolStatusChanged(uint256,bool)": TypedContractEvent<
+    "PoolStatusChanged(string,bool)": TypedContractEvent<
       PoolStatusChangedEvent.InputTuple,
       PoolStatusChangedEvent.OutputTuple,
       PoolStatusChangedEvent.OutputObject
@@ -1147,7 +1112,7 @@ export interface ReliefPools extends BaseContract {
       PoolStatusChangedEvent.OutputObject
     >;
 
-    "ReliefPoolCreated(uint256,uint8,uint8,string,uint256)": TypedContractEvent<
+    "ReliefPoolCreated(string,uint8,uint8,string,uint256)": TypedContractEvent<
       ReliefPoolCreatedEvent.InputTuple,
       ReliefPoolCreatedEvent.OutputTuple,
       ReliefPoolCreatedEvent.OutputObject

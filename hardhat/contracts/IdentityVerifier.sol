@@ -14,6 +14,7 @@ contract IdentityVerifier is SelfVerificationRoot, Ownable {
     
     address public adminAddress;
     bytes32 public immutable configId;
+    address public reliefPoolsContract; // ReliefPools contract address for signature verification
     
     // Maps nullifiers to user identifiers for verification tracking
     mapping(uint256 => uint256) internal _nullifierToUserIdentifier;
@@ -21,18 +22,18 @@ contract IdentityVerifier is SelfVerificationRoot, Ownable {
     // Maps user identifiers to verification status
     mapping(uint256 => bool) internal _verifiedUserIdentifiers;
     
-    // Maps user addresses to their verification data
-    mapping(address => VerificationData) public verifiedUsers;
+    // Maps nullifier to their verification data
+    mapping(uint256 => VerificationData) public verifiedUsers; // nullifier => VerificationData
     
-    // Maps user addresses to their admin signatures
-    mapping(address => bytes) public adminSignatures;
+    // Maps nullifier to their admin signatures
+    mapping(uint256 => bytes) public adminSignatures; // nullifier => admin signature
     
-    // Domain separator for EIP-712 signatures (for Base chain)
-    bytes32 public immutable DOMAIN_SEPARATOR;
+    // Maps nullifier to message hashes that need to be signed
+    mapping(uint256 => bytes32) public messageHashes; // nullifier => message hash
     
-    // TypeHash for verification message
+    // TypeHash for verification message (must match ReliefPools)
     bytes32 public constant VERIFICATION_MESSAGE_TYPEHASH = keccak256(
-        "VerificationMessage(address userAddress,uint256 nullifier,uint256 userIdentifier,string nationality,uint256 timestamp)"
+        "VerificationMessage(uint256 nullifier,uint256 userIdentifier,string nationality,uint256 timestamp)"
     );
     
     struct VerificationData {
@@ -45,15 +46,16 @@ contract IdentityVerifier is SelfVerificationRoot, Ownable {
     
     // Events
     event UserVerified(
-        address indexed userAddress,
         uint256 indexed nullifier,
         uint256 indexed userIdentifier,
         string nationality,
+        address userAddress,
+        string reliefPoolId,
         uint256 timestamp
     );
     
     event AdminSignatureGenerated(
-        address indexed userAddress,
+        uint256 indexed nullifier,
         bytes signature,
         uint256 timestamp
     );
@@ -70,7 +72,8 @@ contract IdentityVerifier is SelfVerificationRoot, Ownable {
         address _adminAddress,
         address _identityVerificationHubV2,
         uint256 _scope,
-        bytes32 _configId
+        bytes32 _configId,
+        address _reliefPoolsContract
     ) 
         SelfVerificationRoot(_identityVerificationHubV2, _scope)
         Ownable(_adminAddress)
@@ -78,17 +81,8 @@ contract IdentityVerifier is SelfVerificationRoot, Ownable {
         adminAddress = _adminAddress;
         configId = _configId;
         _setScope(_scope);
-        
-        // Initialize DOMAIN_SEPARATOR
-        DOMAIN_SEPARATOR = keccak256(
-            abi.encode(
-                keccak256("EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)"),
-                keccak256(bytes("IdentityVerifier")),
-                keccak256(bytes("1")),
-                84532, // Base sepolia chain ID - signatures will be used on Base
-                address(this)
-            )
-        );
+
+        reliefPoolsContract = _reliefPoolsContract;
     }
     
     /**
@@ -113,66 +107,63 @@ contract IdentityVerifier is SelfVerificationRoot, Ownable {
         // if (output.userIdentifier == 0) revert InvalidUserIdentifier();
         // if (_nullifierToUserIdentifier[output.nullifier] != 0) revert RegisteredNullifier();
         // if (_verifiedUserIdentifiers[output.userIdentifier]) revert UserIdentifierAlreadyVerified();
-        // if (bytes(output.nationality).length == 0) revert InvalidNationality();
-        
-        // // Get the user's address from the transaction context
-        // address userAddress = msg.sender;
-        
+        if (bytes(output.nationality).length == 0) revert InvalidNationality();
+                
         // // Store verification data
         // // _nullifierToUserIdentifier[output.nullifier] = output.userIdentifier;
         // // _verifiedUserIdentifiers[output.userIdentifier] = true;
         
-        // verifiedUsers[userAddress] = VerificationData({
-        //     nullifier: output.nullifier,
-        //     userIdentifier: output.userIdentifier,
-        //     nationality: output.nationality,
-        //     timestamp: block.timestamp,
-        //     isVerified: true
-        // });
+        verifiedUsers[output.nullifier] = VerificationData({
+            nullifier: output.nullifier,
+            userIdentifier: output.userIdentifier,
+            nationality: output.nationality,
+            timestamp: block.timestamp,
+            isVerified: true
+        });
         
-        // // Generate admin signature automatically
-        // bytes memory adminSignature = _generateAdminSignature(
-        //     userAddress,
-        //     output.nullifier,
-        //     output.userIdentifier,
-        //     output.nationality,
-        //     block.timestamp
-        // );
+        // Generate message hash that needs to be signed by admin off-chain
+        bytes32 messageHash = _generateMessageHash(
+            output.nullifier,
+            output.userIdentifier,
+            output.nationality,
+            block.timestamp
+        );
         
-        // // Store the signature
-        // adminSignatures[userAddress] = adminSignature;
+        // Store the message hash - admin will sign this off-chain
+        messageHashes[output.nullifier] = messageHash;
 
-        // emit UserVerified(
-        //     userAddress, 
-        //     output.nullifier, 
-        //     output.userIdentifier, 
-        //     output.nationality, 
-        //     block.timestamp
-        // );
+        address userAddress = userIdentifierToAddress(output.userIdentifier);
+
+        // Decode userData from 64-byte hex string back to pool ID string
+        string memory poolIdString = _bytesToString(userData);
         
-        // emit AdminSignatureGenerated(
-        //     userAddress,
-        //     adminSignature,
-        //     block.timestamp
-        // );
+        // Validate that the pool ID is not empty
+        require(bytes(poolIdString).length > 0, "Pool ID cannot be empty");
+
+        emit UserVerified(
+            output.nullifier, 
+            output.userIdentifier, 
+            output.nationality, 
+            userAddress,
+            poolIdString,
+            block.timestamp
+        );
         return;
     }
     
     /**
-     * @dev Generate admin signature for verified user (internal)
+     * @dev Generate message hash that needs to be signed by admin (internal)
      */
-    function _generateAdminSignature(
-        address userAddress,
+    function _generateMessageHash(
         uint256 nullifier,
         uint256 userIdentifier,
         string memory nationality,
         uint256 timestamp
-    ) internal view returns (bytes memory) {
+    ) internal view returns (bytes32) {
         // Create EIP-712 structured message
         bytes32 structHash = keccak256(
             abi.encode(
                 VERIFICATION_MESSAGE_TYPEHASH,
-                userAddress,
                 nullifier,
                 userIdentifier,
                 keccak256(bytes(nationality)),
@@ -180,29 +171,69 @@ contract IdentityVerifier is SelfVerificationRoot, Ownable {
             )
         );
         
-        bytes32 digest = keccak256(
-            abi.encodePacked("\x19\x01", DOMAIN_SEPARATOR, structHash)
-        );
+        // Use ReliefPools domain separator for signature verification
+        bytes32 reliefPoolsDomainSeparator = _getReliefPoolsDomainSeparator();
         
-        // In a real implementation, this would be signed off-chain by the admin
-        // For now, we return the digest that needs to be signed
-        // The actual signing should happen off-chain with the admin's private key
-        return abi.encode(digest);
+        return keccak256(
+            abi.encodePacked("\x19\x01", reliefPoolsDomainSeparator, structHash)
+        );
+    }
+    
+    /**
+     * @dev Get ReliefPools domain separator for signature verification
+     */
+    function _getReliefPoolsDomainSeparator() internal view returns (bytes32) {
+        require(reliefPoolsContract != address(0), "ReliefPools contract not set");
+        
+        return keccak256(
+            abi.encode(
+                keccak256("EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)"),
+                keccak256(bytes("ReliefPools")),
+                keccak256(bytes("1")),
+                8453, // Base chain ID
+                reliefPoolsContract
+            )
+        );
+    }
+    
+    /**
+     * @dev Set admin signature for a verified user (only admin can call)
+     */
+    function setAdminSignature(uint256 nullifier, bytes memory signature) external {
+        require(msg.sender == adminAddress, "Unauthorized: Not Admin");
+        require(verifiedUsers[nullifier].isVerified, "User not verified");
+        require(signature.length == 65, "Invalid signature length");
+        
+        adminSignatures[nullifier] = signature;
+        
+        emit AdminSignatureGenerated(
+            nullifier,
+            signature,
+            block.timestamp
+        );
+    }
+    
+    /**
+     * @dev Get message hash that needs to be signed by admin
+     */
+    function getMessageHashToSign(uint256 nullifier) external view returns (bytes32) {
+        if (!verifiedUsers[nullifier].isVerified) revert UserNotVerified();
+        return messageHashes[nullifier];
     }
     
     /**
      * @dev Get admin signature for a verified user
      */
-    function getAdminSignature(address userAddress) external view returns (bytes memory) {
-        if (!verifiedUsers[userAddress].isVerified) revert UserNotVerified();
-        return adminSignatures[userAddress];
+    function getAdminSignature(uint256 nullifier) external view returns (bytes memory) {
+        if (!verifiedUsers[nullifier].isVerified) revert UserNotVerified();
+        require(adminSignatures[nullifier].length > 0, "Signature not set");
+        return adminSignatures[nullifier];
     }
     
     /**
      * @dev Get message hash that needs to be signed by admin (for off-chain signing)
      */
     function getMessageHash(
-        address userAddress,
         uint256 nullifier,
         uint256 userIdentifier,
         string memory nationality,
@@ -211,7 +242,6 @@ contract IdentityVerifier is SelfVerificationRoot, Ownable {
         bytes32 structHash = keccak256(
             abi.encode(
                 VERIFICATION_MESSAGE_TYPEHASH,
-                userAddress,
                 nullifier,
                 userIdentifier,
                 keccak256(bytes(nationality)),
@@ -219,8 +249,11 @@ contract IdentityVerifier is SelfVerificationRoot, Ownable {
             )
         );
         
+        // Use ReliefPools domain separator for signature verification
+        bytes32 reliefPoolsDomainSeparator = _getReliefPoolsDomainSeparator();
+        
         return keccak256(
-            abi.encodePacked("\x19\x01", DOMAIN_SEPARATOR, structHash)
+            abi.encodePacked("\x19\x01", reliefPoolsDomainSeparator, structHash)
         );
     }
     
@@ -228,7 +261,6 @@ contract IdentityVerifier is SelfVerificationRoot, Ownable {
      * @dev Verify admin signature (utility function for testing)
      */
     function verifyAdminSignature(
-        address userAddress,
         uint256 nullifier,
         uint256 userIdentifier,
         string memory nationality,
@@ -238,7 +270,6 @@ contract IdentityVerifier is SelfVerificationRoot, Ownable {
         bytes32 structHash = keccak256(
             abi.encode(
                 VERIFICATION_MESSAGE_TYPEHASH,
-                userAddress,
                 nullifier,
                 userIdentifier,
                 keccak256(bytes(nationality)),
@@ -246,8 +277,11 @@ contract IdentityVerifier is SelfVerificationRoot, Ownable {
             )
         );
         
+        // Use ReliefPools domain separator for signature verification
+        bytes32 reliefPoolsDomainSeparator = _getReliefPoolsDomainSeparator();
+        
         bytes32 digest = keccak256(
-            abi.encodePacked("\x19\x01", DOMAIN_SEPARATOR, structHash)
+            abi.encodePacked("\x19\x01", reliefPoolsDomainSeparator, structHash)
         );
         
         address signer = digest.recover(signature);
@@ -257,15 +291,15 @@ contract IdentityVerifier is SelfVerificationRoot, Ownable {
     /**
      * @dev Get verification data for a user
      */
-    function getVerificationData(address userAddress) external view returns (VerificationData memory) {
-        return verifiedUsers[userAddress];
+    function getVerificationData(uint256 nullifier) external view returns (VerificationData memory) {
+        return verifiedUsers[nullifier];
     }
     
     /**
      * @dev Check if a user is verified
      */
-    function isUserVerified(address userAddress) external view returns (bool) {
-        return verifiedUsers[userAddress].isVerified;
+    function isUserVerified(uint256 nullifier) external view returns (bool) {
+        return verifiedUsers[nullifier].isVerified;
     }
     
     /**
@@ -280,5 +314,54 @@ contract IdentityVerifier is SelfVerificationRoot, Ownable {
      */
     function setScope(uint256 _scope) external onlyOwner {
         _setScope(_scope);
+    }
+    
+    /**
+     * @dev Set the ReliefPools contract address for signature verification
+     */
+    function setReliefPoolsContract(address _reliefPoolsContract) external onlyOwner {
+        reliefPoolsContract = _reliefPoolsContract;
+    }
+
+    /**
+     * @dev Convert userIdentifier to address
+     */
+    function userIdentifierToAddress(uint256 userIdentifier) public pure returns (address) {
+        return address(uint160(userIdentifier));
+    }
+
+    /**
+     * @dev Get the address associated with a verified user's nullifier
+     */
+    function getVerifiedUserAddress(uint256 nullifier) external view returns (address) {
+        require(verifiedUsers[nullifier].isVerified, "User not verified");
+        return userIdentifierToAddress(verifiedUsers[nullifier].userIdentifier);
+    }
+
+    /**
+     * @dev Convert bytes to string, removing null bytes padding
+     */
+    function _bytesToString(bytes memory data) internal pure returns (string memory) {
+        // Find the actual length (first null byte)
+        uint256 length = 0;
+        for (uint256 i = 0; i < data.length; i++) {
+            if (data[i] == 0) {
+                length = i;
+                break;
+            }
+        }
+        
+        // If no null byte found, use full length
+        if (length == 0) {
+            length = data.length;
+        }
+        
+        // Create new bytes array with actual length
+        bytes memory result = new bytes(length);
+        for (uint256 i = 0; i < length; i++) {
+            result[i] = data[i];
+        }
+        
+        return string(result);
     }
 }

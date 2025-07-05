@@ -11,12 +11,16 @@ const IdentityVerifierModule = buildModule("IdentityVerifierModule", (m) => {
   // Generate a config ID (you may want to customize this)
   const configId = m.getParameter("configId", "0x7b6436b0c98f62380866d9432c2af0ee08ce16a171bda6951aecd95ee1307d61");
 
+  // ReliefPools contract address (will be set from Base Sepolia deployment)
+  const reliefPoolsContract = m.getParameter("reliefPoolsContract", process.env.RELIEF_POOLS_CONTRACT || "0x0000000000000000000000000000000000000000");
+
   // Deploy IdentityVerifier contract
   const identityVerifier = m.contract("IdentityVerifier", [
     adminAddress,
     selfProtocolHubCeloTestnet,
     scope,
-    configId
+    configId,
+    reliefPoolsContract
   ]);
 
   return { identityVerifier };

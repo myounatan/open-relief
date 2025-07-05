@@ -14,7 +14,7 @@ export interface CountryData {
 export interface DisasterZoneFeature {
   type: "Feature";
   properties: {
-    id: string;
+    id: string; 
     name: string;
     description: string;
     disasterType:
@@ -146,7 +146,7 @@ export const DISASTER_ZONES: DisasterZoneFeature[] = [
   {
     type: "Feature",
     properties: {
-      id: "philippines_luzon",
+      id: "philippines",
       name: "Philippines (Luzon)",
       description: "Typhoon Relief",
       disasterType: "typhoon",
@@ -189,7 +189,7 @@ export const DISASTER_ZONES: DisasterZoneFeature[] = [
   {
     type: "Feature",
     properties: {
-      id: "turkey_south",
+      id: "turkey",
       name: "Turkey (Southern Region)",
       description: "Earthquake Emergency Aid",
       disasterType: "earthquake",
@@ -261,7 +261,7 @@ export const DISASTER_ZONES: DisasterZoneFeature[] = [
   {
     type: "Feature",
     properties: {
-      id: "ukraine_east",
+      id: "ukraine",
       name: "Ukraine (Eastern Region)",
       description: "Humanitarian Crisis Support",
       disasterType: "war",

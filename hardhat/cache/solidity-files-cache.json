@@ -149,8 +149,8 @@
       ]
     },
     "/Users/matthew/Projects/open-relief/hardhat/contracts/ReliefPools.sol": {
-      "lastModificationDate": 1751738842328,
-      "contentHash": "0ffce8ea488cb45d75c6502f4063e34d",
+      "lastModificationDate": 1751755641125,
+      "contentHash": "695ce737b55204a904c79023f4a9949a",
       "sourceName": "contracts/ReliefPools.sol",
       "solcConfig": {
         "version": "0.7.6",
@@ -191,6 +191,41 @@
         "ReliefPools"
       ]
     },
+    "/Users/matthew/Projects/open-relief/node_modules/.pnpm/@openzeppelin+contracts@3.4.2/node_modules/@openzeppelin/contracts/cryptography/ECDSA.sol": {
+      "lastModificationDate": 1751704142164,
+      "contentHash": "373a483bb0a88668c0735924d84f50f1",
+      "sourceName": "@openzeppelin/contracts-0.7/cryptography/ECDSA.sol",
+      "solcConfig": {
+        "version": "0.7.6",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [],
+      "versionPragmas": [
+        ">=0.6.0 <0.8.0"
+      ],
+      "artifacts": [
+        "ECDSA"
+      ]
+    },
     "/Users/matthew/Projects/open-relief/node_modules/.pnpm/@openzeppelin+contracts@3.4.2/node_modules/@openzeppelin/contracts/access/Ownable.sol": {
       "lastModificationDate": 1751704142196,
       "contentHash": "6748815a5b45c4aeeda56819f41190e0",
@@ -228,10 +263,10 @@
         "Ownable"
       ]
     },
-    "/Users/matthew/Projects/open-relief/node_modules/.pnpm/@openzeppelin+contracts@3.4.2/node_modules/@openzeppelin/contracts/cryptography/ECDSA.sol": {
-      "lastModificationDate": 1751704142164,
-      "contentHash": "373a483bb0a88668c0735924d84f50f1",
-      "sourceName": "@openzeppelin/contracts-0.7/cryptography/ECDSA.sol",
+    "/Users/matthew/Projects/open-relief/node_modules/.pnpm/@openzeppelin+contracts@3.4.2/node_modules/@openzeppelin/contracts/token/ERC20/IERC20.sol": {
+      "lastModificationDate": 1751704142187,
+      "contentHash": "e0a41531d159d3a32f84b7a3ecf9fabb",
+      "sourceName": "@openzeppelin/contracts-0.7/token/ERC20/IERC20.sol",
       "solcConfig": {
         "version": "0.7.6",
         "settings": {
@@ -260,7 +295,7 @@
         ">=0.6.0 <0.8.0"
       ],
       "artifacts": [
-        "ECDSA"
+        "IERC20"
       ]
     },
     "/Users/matthew/Projects/open-relief/node_modules/.pnpm/@openzeppelin+contracts@3.4.2/node_modules/@openzeppelin/contracts/token/ERC20/SafeERC20.sol": {
@@ -300,41 +335,6 @@
       ],
       "artifacts": [
         "SafeERC20"
-      ]
-    },
-    "/Users/matthew/Projects/open-relief/node_modules/.pnpm/@openzeppelin+contracts@3.4.2/node_modules/@openzeppelin/contracts/token/ERC20/IERC20.sol": {
-      "lastModificationDate": 1751704142187,
-      "contentHash": "e0a41531d159d3a32f84b7a3ecf9fabb",
-      "sourceName": "@openzeppelin/contracts-0.7/token/ERC20/IERC20.sol",
-      "solcConfig": {
-        "version": "0.7.6",
-        "settings": {
-          "optimizer": {
-            "enabled": true,
-            "runs": 200
-          },
-          "outputSelection": {
-            "*": {
-              "*": [
-                "abi",
-                "evm.bytecode",
-                "evm.deployedBytecode",
-                "evm.methodIdentifiers",
-                "metadata"
-              ],
-              "": [
-                "ast"
-              ]
-            }
-          }
-        }
-      },
-      "imports": [],
-      "versionPragmas": [
-        ">=0.6.0 <0.8.0"
-      ],
-      "artifacts": [
-        "IERC20"
       ]
     },
     "/Users/matthew/Projects/open-relief/node_modules/.pnpm/@openzeppelin+contracts@3.4.2/node_modules/@openzeppelin/contracts/utils/Context.sol": {
@@ -408,8 +408,8 @@
       ]
     },
     "/Users/matthew/Projects/open-relief/hardhat/contracts/IdentityVerifier.sol": {
-      "lastModificationDate": 1751740412072,
-      "contentHash": "c4da367b09aaaaf61de3240079bd3151",
+      "lastModificationDate": 1751757455811,
+      "contentHash": "3ba94c07ad7de56081506b9dd9ae66be",
       "sourceName": "contracts/IdentityVerifier.sol",
       "solcConfig": {
         "version": "0.8.28",
@@ -451,48 +451,10 @@
         "IdentityVerifier"
       ]
     },
-    "/Users/matthew/Projects/open-relief/node_modules/.pnpm/@openzeppelin+contracts@5.3.0/node_modules/@openzeppelin/contracts/access/Ownable.sol": {
-      "lastModificationDate": 1751704142299,
-      "contentHash": "d3c790edc9ccf808a17c5a6cd13614fd",
-      "sourceName": "@openzeppelin/contracts/access/Ownable.sol",
-      "solcConfig": {
-        "version": "0.8.28",
-        "settings": {
-          "optimizer": {
-            "enabled": true,
-            "runs": 200
-          },
-          "evmVersion": "paris",
-          "outputSelection": {
-            "*": {
-              "*": [
-                "abi",
-                "evm.bytecode",
-                "evm.deployedBytecode",
-                "evm.methodIdentifiers",
-                "metadata"
-              ],
-              "": [
-                "ast"
-              ]
-            }
-          }
-        }
-      },
-      "imports": [
-        "../utils/Context.sol"
-      ],
-      "versionPragmas": [
-        "^0.8.20"
-      ],
-      "artifacts": [
-        "Ownable"
-      ]
-    },
-    "/Users/matthew/Projects/open-relief/node_modules/.pnpm/@selfxyz+contracts@1.2.0_bufferutil@4.0.9_encoding@0.1.13_ethers@6.15.0_bufferutil@4.0.9_utf-_m3ggfklbwtwb7j4atsoys6qvvi/node_modules/@selfxyz/contracts/contracts/interfaces/ISelfVerificationRoot.sol": {
-      "lastModificationDate": 1751704142140,
-      "contentHash": "29a0c9ef03e4325949ae756b0f78a592",
-      "sourceName": "@selfxyz/contracts/contracts/interfaces/ISelfVerificationRoot.sol",
+    "/Users/matthew/Projects/open-relief/node_modules/.pnpm/@selfxyz+contracts@1.2.0_bufferutil@4.0.9_encoding@0.1.13_ethers@6.15.0_bufferutil@4.0._bec760fe229de4a463aa1d587da100d1/node_modules/@selfxyz/contracts/contracts/libraries/SelfStructs.sol": {
+      "lastModificationDate": 1751740896039,
+      "contentHash": "44a93a925c0dc9f2e3f89906f7095789",
+      "sourceName": "@selfxyz/contracts/contracts/libraries/SelfStructs.sol",
       "solcConfig": {
         "version": "0.8.28",
         "settings": {
@@ -522,11 +484,11 @@
         "0.8.28"
       ],
       "artifacts": [
-        "ISelfVerificationRoot"
+        "SelfStructs"
       ]
     },
-    "/Users/matthew/Projects/open-relief/node_modules/.pnpm/@selfxyz+contracts@1.2.0_bufferutil@4.0.9_encoding@0.1.13_ethers@6.15.0_bufferutil@4.0.9_utf-_m3ggfklbwtwb7j4atsoys6qvvi/node_modules/@selfxyz/contracts/contracts/abstract/SelfVerificationRoot.sol": {
-      "lastModificationDate": 1751704142140,
+    "/Users/matthew/Projects/open-relief/node_modules/.pnpm/@selfxyz+contracts@1.2.0_bufferutil@4.0.9_encoding@0.1.13_ethers@6.15.0_bufferutil@4.0._bec760fe229de4a463aa1d587da100d1/node_modules/@selfxyz/contracts/contracts/abstract/SelfVerificationRoot.sol": {
+      "lastModificationDate": 1751740896038,
       "contentHash": "e9eb9aef3b80154e297a1a5d1b46004f",
       "sourceName": "@selfxyz/contracts/contracts/abstract/SelfVerificationRoot.sol",
       "solcConfig": {
@@ -566,8 +528,8 @@
         "SelfVerificationRoot"
       ]
     },
-    "/Users/matthew/Projects/open-relief/node_modules/.pnpm/@selfxyz+contracts@1.2.0_bufferutil@4.0.9_encoding@0.1.13_ethers@6.15.0_bufferutil@4.0.9_utf-_m3ggfklbwtwb7j4atsoys6qvvi/node_modules/@selfxyz/contracts/contracts/interfaces/IIdentityVerificationHubV2.sol": {
-      "lastModificationDate": 1751704142140,
+    "/Users/matthew/Projects/open-relief/node_modules/.pnpm/@selfxyz+contracts@1.2.0_bufferutil@4.0.9_encoding@0.1.13_ethers@6.15.0_bufferutil@4.0._bec760fe229de4a463aa1d587da100d1/node_modules/@selfxyz/contracts/contracts/interfaces/IIdentityVerificationHubV2.sol": {
+      "lastModificationDate": 1751740896039,
       "contentHash": "5d5d2b7ffd212f22bb33b0754757f696",
       "sourceName": "@selfxyz/contracts/contracts/interfaces/IIdentityVerificationHubV2.sol",
       "solcConfig": {
@@ -606,10 +568,10 @@
         "IIdentityVerificationHubV2"
       ]
     },
-    "/Users/matthew/Projects/open-relief/node_modules/.pnpm/@selfxyz+contracts@1.2.0_bufferutil@4.0.9_encoding@0.1.13_ethers@6.15.0_bufferutil@4.0.9_utf-_m3ggfklbwtwb7j4atsoys6qvvi/node_modules/@selfxyz/contracts/contracts/libraries/SelfStructs.sol": {
-      "lastModificationDate": 1751704142141,
-      "contentHash": "44a93a925c0dc9f2e3f89906f7095789",
-      "sourceName": "@selfxyz/contracts/contracts/libraries/SelfStructs.sol",
+    "/Users/matthew/Projects/open-relief/node_modules/.pnpm/@selfxyz+contracts@1.2.0_bufferutil@4.0.9_encoding@0.1.13_ethers@6.15.0_bufferutil@4.0._bec760fe229de4a463aa1d587da100d1/node_modules/@selfxyz/contracts/contracts/interfaces/ISelfVerificationRoot.sol": {
+      "lastModificationDate": 1751740896039,
+      "contentHash": "29a0c9ef03e4325949ae756b0f78a592",
+      "sourceName": "@selfxyz/contracts/contracts/interfaces/ISelfVerificationRoot.sol",
       "solcConfig": {
         "version": "0.8.28",
         "settings": {
@@ -639,11 +601,11 @@
         "0.8.28"
       ],
       "artifacts": [
-        "SelfStructs"
+        "ISelfVerificationRoot"
       ]
     },
-    "/Users/matthew/Projects/open-relief/node_modules/.pnpm/@selfxyz+contracts@1.2.0_bufferutil@4.0.9_encoding@0.1.13_ethers@6.15.0_bufferutil@4.0.9_utf-_m3ggfklbwtwb7j4atsoys6qvvi/node_modules/@selfxyz/contracts/contracts/constants/AttestationId.sol": {
-      "lastModificationDate": 1751704142140,
+    "/Users/matthew/Projects/open-relief/node_modules/.pnpm/@selfxyz+contracts@1.2.0_bufferutil@4.0.9_encoding@0.1.13_ethers@6.15.0_bufferutil@4.0._bec760fe229de4a463aa1d587da100d1/node_modules/@selfxyz/contracts/contracts/constants/AttestationId.sol": {
+      "lastModificationDate": 1751740896038,
       "contentHash": "2ef6bef03203a70e6bc21cf2e58e38b6",
       "sourceName": "@selfxyz/contracts/contracts/constants/AttestationId.sol",
       "solcConfig": {
@@ -676,6 +638,44 @@
       ],
       "artifacts": [
         "AttestationId"
+      ]
+    },
+    "/Users/matthew/Projects/open-relief/node_modules/.pnpm/@openzeppelin+contracts@5.3.0/node_modules/@openzeppelin/contracts/access/Ownable.sol": {
+      "lastModificationDate": 1751704142299,
+      "contentHash": "d3c790edc9ccf808a17c5a6cd13614fd",
+      "sourceName": "@openzeppelin/contracts/access/Ownable.sol",
+      "solcConfig": {
+        "version": "0.8.28",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "evmVersion": "paris",
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [
+        "../utils/Context.sol"
+      ],
+      "versionPragmas": [
+        "^0.8.20"
+      ],
+      "artifacts": [
+        "Ownable"
       ]
     },
     "/Users/matthew/Projects/open-relief/node_modules/.pnpm/@openzeppelin+contracts@5.3.0/node_modules/@openzeppelin/contracts/utils/cryptography/ECDSA.sol": {
@@ -714,44 +714,8 @@
         "ECDSA"
       ]
     },
-    "/Users/matthew/Projects/open-relief/node_modules/.pnpm/@openzeppelin+contracts@5.3.0/node_modules/@openzeppelin/contracts/utils/Context.sol": {
-      "lastModificationDate": 1751704142223,
-      "contentHash": "67bfbc07588eb8683b3fd8f6f909563e",
-      "sourceName": "@openzeppelin/contracts/utils/Context.sol",
-      "solcConfig": {
-        "version": "0.8.28",
-        "settings": {
-          "optimizer": {
-            "enabled": true,
-            "runs": 200
-          },
-          "evmVersion": "paris",
-          "outputSelection": {
-            "*": {
-              "*": [
-                "abi",
-                "evm.bytecode",
-                "evm.deployedBytecode",
-                "evm.methodIdentifiers",
-                "metadata"
-              ],
-              "": [
-                "ast"
-              ]
-            }
-          }
-        }
-      },
-      "imports": [],
-      "versionPragmas": [
-        "^0.8.20"
-      ],
-      "artifacts": [
-        "Context"
-      ]
-    },
-    "/Users/matthew/Projects/open-relief/node_modules/.pnpm/@selfxyz+contracts@1.2.0_bufferutil@4.0.9_encoding@0.1.13_ethers@6.15.0_bufferutil@4.0.9_utf-_m3ggfklbwtwb7j4atsoys6qvvi/node_modules/@selfxyz/contracts/contracts/constants/CircuitConstantsV2.sol": {
-      "lastModificationDate": 1751704142140,
+    "/Users/matthew/Projects/open-relief/node_modules/.pnpm/@selfxyz+contracts@1.2.0_bufferutil@4.0.9_encoding@0.1.13_ethers@6.15.0_bufferutil@4.0._bec760fe229de4a463aa1d587da100d1/node_modules/@selfxyz/contracts/contracts/constants/CircuitConstantsV2.sol": {
+      "lastModificationDate": 1751740896038,
       "contentHash": "8babdffb22b45a4c723303b1cd9b5d0b",
       "sourceName": "@selfxyz/contracts/contracts/constants/CircuitConstantsV2.sol",
       "solcConfig": {
@@ -788,8 +752,8 @@
         "CircuitConstantsV2"
       ]
     },
-    "/Users/matthew/Projects/open-relief/node_modules/.pnpm/@selfxyz+contracts@1.2.0_bufferutil@4.0.9_encoding@0.1.13_ethers@6.15.0_bufferutil@4.0.9_utf-_m3ggfklbwtwb7j4atsoys6qvvi/node_modules/@selfxyz/contracts/contracts/interfaces/IRegisterCircuitVerifier.sol": {
-      "lastModificationDate": 1751704142140,
+    "/Users/matthew/Projects/open-relief/node_modules/.pnpm/@selfxyz+contracts@1.2.0_bufferutil@4.0.9_encoding@0.1.13_ethers@6.15.0_bufferutil@4.0._bec760fe229de4a463aa1d587da100d1/node_modules/@selfxyz/contracts/contracts/interfaces/IRegisterCircuitVerifier.sol": {
+      "lastModificationDate": 1751740896039,
       "contentHash": "f6863e2da3e66b13547033ad362732f6",
       "sourceName": "@selfxyz/contracts/contracts/interfaces/IRegisterCircuitVerifier.sol",
       "solcConfig": {
@@ -824,8 +788,8 @@
         "IRegisterCircuitVerifier"
       ]
     },
-    "/Users/matthew/Projects/open-relief/node_modules/.pnpm/@selfxyz+contracts@1.2.0_bufferutil@4.0.9_encoding@0.1.13_ethers@6.15.0_bufferutil@4.0.9_utf-_m3ggfklbwtwb7j4atsoys6qvvi/node_modules/@selfxyz/contracts/contracts/interfaces/IDscCircuitVerifier.sol": {
-      "lastModificationDate": 1751704142140,
+    "/Users/matthew/Projects/open-relief/node_modules/.pnpm/@selfxyz+contracts@1.2.0_bufferutil@4.0.9_encoding@0.1.13_ethers@6.15.0_bufferutil@4.0._bec760fe229de4a463aa1d587da100d1/node_modules/@selfxyz/contracts/contracts/interfaces/IDscCircuitVerifier.sol": {
+      "lastModificationDate": 1751740896038,
       "contentHash": "c208f71065d0ead14282c729c5a33a76",
       "sourceName": "@selfxyz/contracts/contracts/interfaces/IDscCircuitVerifier.sol",
       "solcConfig": {
@@ -858,6 +822,42 @@
       ],
       "artifacts": [
         "IDscCircuitVerifier"
+      ]
+    },
+    "/Users/matthew/Projects/open-relief/node_modules/.pnpm/@openzeppelin+contracts@5.3.0/node_modules/@openzeppelin/contracts/utils/Context.sol": {
+      "lastModificationDate": 1751704142223,
+      "contentHash": "67bfbc07588eb8683b3fd8f6f909563e",
+      "sourceName": "@openzeppelin/contracts/utils/Context.sol",
+      "solcConfig": {
+        "version": "0.8.28",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "evmVersion": "paris",
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [],
+      "versionPragmas": [
+        "^0.8.20"
+      ],
+      "artifacts": [
+        "Context"
       ]
     },
     "/Users/matthew/Projects/open-relief/node_modules/.pnpm/@openzeppelin+contracts@5.3.0/node_modules/@openzeppelin/contracts/token/ERC20/ERC20.sol": {
@@ -937,44 +937,6 @@
         "IERC20"
       ]
     },
-    "/Users/matthew/Projects/open-relief/node_modules/.pnpm/@openzeppelin+contracts@5.3.0/node_modules/@openzeppelin/contracts/interfaces/draft-IERC6093.sol": {
-      "lastModificationDate": 1751704142229,
-      "contentHash": "267d92fe4de67b1bdb3302c08f387dbf",
-      "sourceName": "@openzeppelin/contracts/interfaces/draft-IERC6093.sol",
-      "solcConfig": {
-        "version": "0.8.28",
-        "settings": {
-          "optimizer": {
-            "enabled": true,
-            "runs": 200
-          },
-          "evmVersion": "paris",
-          "outputSelection": {
-            "*": {
-              "*": [
-                "abi",
-                "evm.bytecode",
-                "evm.deployedBytecode",
-                "evm.methodIdentifiers",
-                "metadata"
-              ],
-              "": [
-                "ast"
-              ]
-            }
-          }
-        }
-      },
-      "imports": [],
-      "versionPragmas": [
-        "^0.8.20"
-      ],
-      "artifacts": [
-        "IERC1155Errors",
-        "IERC20Errors",
-        "IERC721Errors"
-      ]
-    },
     "/Users/matthew/Projects/open-relief/node_modules/.pnpm/@openzeppelin+contracts@5.3.0/node_modules/@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol": {
       "lastModificationDate": 1751704142249,
       "contentHash": "794db3115001aa372c79326fcfd44b1f",
@@ -1011,6 +973,44 @@
       ],
       "artifacts": [
         "IERC20Metadata"
+      ]
+    },
+    "/Users/matthew/Projects/open-relief/node_modules/.pnpm/@openzeppelin+contracts@5.3.0/node_modules/@openzeppelin/contracts/interfaces/draft-IERC6093.sol": {
+      "lastModificationDate": 1751704142229,
+      "contentHash": "267d92fe4de67b1bdb3302c08f387dbf",
+      "sourceName": "@openzeppelin/contracts/interfaces/draft-IERC6093.sol",
+      "solcConfig": {
+        "version": "0.8.28",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "evmVersion": "paris",
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [],
+      "versionPragmas": [
+        "^0.8.20"
+      ],
+      "artifacts": [
+        "IERC1155Errors",
+        "IERC20Errors",
+        "IERC721Errors"
       ]
     },
     "/Users/matthew/Projects/open-relief/hardhat/contracts/MockUSDC.sol": {

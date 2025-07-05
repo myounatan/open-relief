@@ -49,7 +49,8 @@ contract ReliefPools is Ownable, IMessageHandlerV2 {
     IERC20 public immutable usdcToken;
     address public cctpMessageTransmitter; // CCTP Message Transmitter address
     
-    uint256 public poolCounter;
+    // Track all pool IDs for enumeration
+    string[] public poolIds;
     
     struct Beneficiary {
         uint256 nullifier;
@@ -82,7 +83,7 @@ contract ReliefPools is Ownable, IMessageHandlerV2 {
     }
 
     struct ReliefPool {
-        uint256 id;
+        string id;
         DisasterTypeEnum disasterType;
         ClassificationEnum classification;
         string nationalityRequired; // ex. "Sudanese"
@@ -99,21 +100,21 @@ contract ReliefPools is Ownable, IMessageHandlerV2 {
     
     // TypeHash for verification message (must match IdentityVerifier)
     bytes32 public constant VERIFICATION_MESSAGE_TYPEHASH = keccak256(
-        "VerificationMessage(address userAddress,uint256 nullifier,uint256 userIdentifier,string nationality,uint256 timestamp)"
+        "VerificationMessage(uint256 nullifier,uint256 userIdentifier,string nationality,uint256 timestamp)"
     );
     
     // Storage mappings
-    mapping(uint256 => ReliefPool) public reliefPools;
-    mapping(uint256 => mapping(address => Beneficiary)) public poolBeneficiaries;
-    mapping(uint256 => mapping(address => Donor)) public poolDonors;
+    mapping(string => ReliefPool) public reliefPools;
+    mapping(string => mapping(address => Beneficiary)) public poolBeneficiaries;
+    mapping(string => mapping(address => Donor)) public poolDonors;
     // SECURITY: Track claims by userIdentifier only (not nullifier + userIdentifier)
     // This prevents multiple claims from the same person using different documents
-    mapping(uint256 => mapping(uint256 => bool)) public hasPersonClaimedFromPool; // poolId => userIdentifier => bool
-    mapping(uint256 => uint256[]) public personClaimedPools; // userIdentifier => poolIds[]
+    mapping(string => mapping(uint256 => bool)) public hasPersonClaimedFromPool; // poolId => userIdentifier => bool
+    mapping(uint256 => string[]) public personClaimedPools; // userIdentifier => poolIds[]
     
     // Events
     event ReliefPoolCreated(
-        uint256 indexed poolId,
+        string indexed poolId,
         DisasterTypeEnum disasterType,
         ClassificationEnum classification,
         string nationalityRequired,
@@ -121,7 +122,7 @@ contract ReliefPools is Ownable, IMessageHandlerV2 {
     );
     
     event FundsClaimed(
-        uint256 indexed poolId,
+        string indexed poolId,
         address indexed claimer,
         address indexed recipient,
         uint256 nullifier,
@@ -132,7 +133,7 @@ contract ReliefPools is Ownable, IMessageHandlerV2 {
     );
     
     event DonationMade(
-        uint256 indexed poolId,
+        string indexed poolId,
         address indexed donor,
         uint32 sourceDomain, // 6 for Base (direct donations), actual domain for cross-chain
         uint256 amount,
@@ -140,7 +141,12 @@ contract ReliefPools is Ownable, IMessageHandlerV2 {
         string location // lat:lng format (e.g., "40.7128:-74.0060")
     );
     
-    event PoolStatusChanged(uint256 indexed poolId, bool isActive);
+    event PoolStatusChanged(string indexed poolId, bool isActive);
+
+    modifier onlyAdmin() {
+        require(msg.sender == adminAddress, "Unauthorized: Not Admin");
+        _;
+    }
     
     // Custom errors (using revert with reason strings in 0.7.6)
     // error InvalidPool();
@@ -189,15 +195,16 @@ contract ReliefPools is Ownable, IMessageHandlerV2 {
      * @dev Create a new relief pool
      */
     function createReliefPool(
+        string memory poolId,
         DisasterTypeEnum disasterType,
         ClassificationEnum classification,
         string memory nationalityRequired,
         uint256 allocatedFundsPerPerson
-    ) external onlyOwner returns (uint256) {
+    ) external onlyOwner returns (string memory) {
+        require(bytes(poolId).length > 0, "InvalidPoolId");
         require(bytes(nationalityRequired).length > 0, "InvalidNationality");
         require(allocatedFundsPerPerson > 0, "InvalidAmount");
-        
-        uint256 poolId = poolCounter++;
+        require(bytes(reliefPools[poolId].id).length == 0, "PoolAlreadyExists");
         
         reliefPools[poolId] = ReliefPool({
             id: poolId,
@@ -211,6 +218,8 @@ contract ReliefPools is Ownable, IMessageHandlerV2 {
             totalAmountDonated: 0,
             isActive: true
         });
+        
+        poolIds.push(poolId);
         
         emit ReliefPoolCreated(
             poolId,
@@ -278,7 +287,7 @@ contract ReliefPools is Ownable, IMessageHandlerV2 {
         bytes memory hookData = hookDataView.clone();
         
         // Decode hook data: poolId and location
-        (uint256 poolId, string memory location) = abi.decode(hookData, (uint256, string));
+        (string memory poolId, string memory location) = abi.decode(hookData, (string, string));
         
         // Extract donation amount
         uint256 donationAmount = _msg._getAmount();
@@ -286,7 +295,7 @@ contract ReliefPools is Ownable, IMessageHandlerV2 {
         ReliefPool storage pool = reliefPools[poolId];
         
         // Validation checks
-        require(pool.id == poolId, "InvalidPool");
+        require(bytes(pool.id).length > 0, "InvalidPool");
         require(pool.isActive, "PoolInactive");
         require(donationAmount > 0, "InvalidAmount");
         
@@ -321,10 +330,10 @@ contract ReliefPools is Ownable, IMessageHandlerV2 {
     /**
      * @dev Make a direct donation to a specific relief pool (on Base network)
      */
-    function donate(uint256 poolId, uint256 amount, string memory location) external {
+    function donate(string memory poolId, uint256 amount, string memory location) external {
         ReliefPool storage pool = reliefPools[poolId];
         
-        require(pool.id == poolId, "InvalidPool");
+        require(bytes(pool.id).length > 0, "InvalidPool");
         require(pool.isActive, "PoolInactive");
         require(amount > 0, "InvalidAmount");
         
@@ -367,20 +376,20 @@ contract ReliefPools is Ownable, IMessageHandlerV2 {
      * @dev Claim relief funds with admin signature verification
      */
     function claimRelief(
-        uint256 poolId,
+        string memory poolId,
         uint256 nullifier,
         uint256 userIdentifier,
         string memory nationality,
         uint256 timestamp,
-        address recipient,
-        bytes memory adminSignature
-    ) external {
+        address recipient
+        // bytes memory adminSignature
+    ) external onlyAdmin {
         ReliefPool storage pool = reliefPools[poolId];
         
         // Validation checks
-        require(pool.id == poolId, "InvalidPool");
+        require(bytes(pool.id).length > 0, "InvalidPool");
         require(pool.isActive, "PoolInactive");
-        require(!hasPersonClaimedFromPool[poolId][userIdentifier], "AlreadyClaimed");
+        require(!hasPersonClaimedFromPool[poolId][nullifier], "AlreadyClaimed");
         require(recipient != address(0), "InvalidRecipient");
         
         // Verify nationality matches pool requirement
@@ -390,10 +399,10 @@ contract ReliefPools is Ownable, IMessageHandlerV2 {
         );
         
         // Verify admin signature (still uses msg.sender as the verified user)
-        require(
-            _verifyAdminSignature(msg.sender, nullifier, userIdentifier, nationality, timestamp, adminSignature),
-            "InvalidSignature"
-        );
+        // require(
+        //     _verifyAdminSignature(nullifier, userIdentifier, nationality, timestamp, adminSignature),
+        //     "InvalidSignature"
+        // );
         
         // Check if pool has sufficient funds
         uint256 claimAmount = pool.allocatedFundsPerPerson;
@@ -413,8 +422,8 @@ contract ReliefPools is Ownable, IMessageHandlerV2 {
         });
         
         // Mark as claimed (using userIdentifier, not wallet address)
-        hasPersonClaimedFromPool[poolId][userIdentifier] = true;
-        personClaimedPools[userIdentifier].push(poolId);
+        hasPersonClaimedFromPool[poolId][nullifier] = true;
+        personClaimedPools[nullifier].push(poolId);
         
         // Transfer funds to recipient
         usdcToken.safeTransfer(recipient, claimAmount);
@@ -432,25 +441,11 @@ contract ReliefPools is Ownable, IMessageHandlerV2 {
     }
     
     /**
-     * @dev Claim relief funds to the same address (convenience function)
-     */
-    function claimReliefToSelf(
-        uint256 poolId,
-        uint256 nullifier,
-        uint256 userIdentifier,
-        string memory nationality,
-        uint256 timestamp,
-        bytes memory adminSignature
-    ) external {
-        this.claimRelief(poolId, nullifier, userIdentifier, nationality, timestamp, msg.sender, adminSignature);
-    }
-    
-    /**
      * @dev Toggle pool active status
      */
-    function togglePoolStatus(uint256 poolId) external onlyOwner {
+    function togglePoolStatus(string memory poolId) external onlyOwner {
         ReliefPool storage pool = reliefPools[poolId];
-        require(pool.id == poolId, "InvalidPool");
+        require(bytes(pool.id).length > 0, "InvalidPool");
         
         pool.isActive = !pool.isActive;
         emit PoolStatusChanged(poolId, pool.isActive);
@@ -460,7 +455,6 @@ contract ReliefPools is Ownable, IMessageHandlerV2 {
      * @dev Verify admin signature for relief claim
      */
     function _verifyAdminSignature(
-        address userAddress,
         uint256 nullifier,
         uint256 userIdentifier,
         string memory nationality,
@@ -470,7 +464,6 @@ contract ReliefPools is Ownable, IMessageHandlerV2 {
         bytes32 structHash = keccak256(
             abi.encode(
                 VERIFICATION_MESSAGE_TYPEHASH,
-                userAddress,
                 nullifier,
                 userIdentifier,
                 keccak256(bytes(nationality)),
@@ -489,28 +482,28 @@ contract ReliefPools is Ownable, IMessageHandlerV2 {
     /**
      * @dev Get relief pool information
      */
-    function getReliefPool(uint256 poolId) external view returns (ReliefPool memory) {
+    function getReliefPool(string memory poolId) external view returns (ReliefPool memory) {
         return reliefPools[poolId];
     }
     
     /**
      * @dev Get beneficiary information for a pool
      */
-    function getBeneficiary(uint256 poolId, address beneficiary) external view returns (Beneficiary memory) {
+    function getBeneficiary(string memory poolId, address beneficiary) external view returns (Beneficiary memory) {
         return poolBeneficiaries[poolId][beneficiary];
     }
     
     /**
      * @dev Get donor information for a pool
      */
-    function getDonor(uint256 poolId, address donor) external view returns (Donor memory) {
+    function getDonor(string memory poolId, address donor) external view returns (Donor memory) {
         return poolDonors[poolId][donor];
     }
     
     /**
      * @dev Check if person has claimed from a specific pool using userIdentifier
      */
-    function checkPersonClaimedFromPool(uint256 poolId, uint256 userIdentifier) external view returns (bool) {
+    function checkPersonClaimedFromPool(string memory poolId, uint256 userIdentifier) external view returns (bool) {
         // Note: nullifier parameter kept for backward compatibility but not used
         return hasPersonClaimedFromPool[poolId][userIdentifier];
     }
@@ -518,7 +511,7 @@ contract ReliefPools is Ownable, IMessageHandlerV2 {
     /**
      * @dev Get all pools a person has claimed from using userIdentifier
      */
-    function getPersonClaimedPools(uint256 userIdentifier) external view returns (uint256[] memory) {
+    function getPersonClaimedPools(uint256 userIdentifier) external view returns (string[] memory) {
         // Note: nullifier parameter kept for backward compatibility but not used
         return personClaimedPools[userIdentifier];
     }
@@ -527,14 +520,13 @@ contract ReliefPools is Ownable, IMessageHandlerV2 {
      * @dev Verify admin signature for relief claim
      */
     function verifyAdminSignature(
-        address userAddress,
         uint256 nullifier,
         uint256 userIdentifier,
         string memory nationality,
         uint256 timestamp,
         bytes memory adminSignature
     ) external view returns (bool) {
-      return _verifyAdminSignature(userAddress, nullifier, userIdentifier, nationality, timestamp, adminSignature);
+      return _verifyAdminSignature(nullifier, userIdentifier, nationality, timestamp, adminSignature);
     }
     
     /**
@@ -555,6 +547,21 @@ contract ReliefPools is Ownable, IMessageHandlerV2 {
      * @dev Get total number of pools
      */
     function getTotalPools() external view returns (uint256) {
-        return poolCounter;
+        return poolIds.length;
+    }
+    
+    /**
+     * @dev Get all pool IDs
+     */
+    function getAllPoolIds() external view returns (string[] memory) {
+        return poolIds;
+    }
+    
+    /**
+     * @dev Get pool ID by index
+     */
+    function getPoolIdByIndex(uint256 index) external view returns (string memory) {
+        require(index < poolIds.length, "Index out of bounds");
+        return poolIds[index];
     }
 }
