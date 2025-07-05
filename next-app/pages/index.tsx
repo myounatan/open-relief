@@ -1,9 +1,8 @@
-import { useLogin } from "@privy-io/react-auth";
 import { PrivyClient } from "@privy-io/server-auth";
 import { GetServerSideProps } from "next";
 import dynamic from "next/dynamic";
 import Head from "next/head";
-import { useRouter } from "next/router";
+import HeroSection from "../components/HeroSection";
 
 // Dynamically import OpenReliefGlobe to avoid SSR issues
 const OpenReliefGlobe = dynamic(() => import("../components/OpenReliefGlobe"), {
@@ -27,25 +26,17 @@ export const getServerSideProps: GetServerSideProps = async ({ req }) => {
 
   try {
     const claims = await client.verifyAuthToken(cookieAuthToken);
-    // Use this result to pass props to a page for server rendering or to drive redirects!
-    // ref https://nextjs.org/docs/pages/api-reference/functions/get-server-side-props
     console.log({ claims });
 
-    return {
-      props: {},
-      redirect: { destination: "/dashboard", permanent: false },
-    };
+    // Instead of redirecting to dashboard, keep users on the main page
+    // They can navigate to dashboard via the globe interface
+    return { props: {} };
   } catch (error) {
     return { props: {} };
   }
 };
 
-export default function LoginPage() {
-  const router = useRouter();
-  const { login } = useLogin({
-    onComplete: () => router.push("/dashboard"),
-  });
-
+export default function HomePage() {
   return (
     <>
       <Head>
@@ -57,30 +48,8 @@ export default function LoginPage() {
       </Head>
 
       <main className="relative w-full h-screen overflow-hidden">
-        {/* Header Overlay */}
-        <div className="absolute top-0 left-0 right-0 z-10 bg-gradient-to-b from-slate-900/80 to-transparent p-6">
-          <div className="max-w-7xl mx-auto">
-            <div className="text-center">
-              <h1 className="text-4xl md:text-6xl font-bold text-white mb-4">
-                OpenRelief
-              </h1>
-              <p className="text-xl md:text-2xl text-orange-400 mb-6">
-                Instant Verified Aid
-              </p>
-              <p className="text-lg text-slate-300 max-w-2xl mx-auto mb-8">
-                Connect donors directly with disaster zones through transparent,
-                verified aid distribution. See real-time impact across the
-                globe.
-              </p>
-              <button
-                className="bg-orange-600 hover:bg-orange-700 py-3 px-8 text-white rounded-lg font-medium text-lg transition-colors shadow-lg"
-                onClick={login}
-              >
-                Get Started
-              </button>
-            </div>
-          </div>
-        </div>
+        {/* Hero Section */}
+        <HeroSection />
 
         {/* Globe Component */}
         <OpenReliefGlobe />
@@ -91,6 +60,10 @@ export default function LoginPage() {
             <div className="text-center">
               <p className="text-sm text-slate-400 mb-2">
                 Click on highlighted disaster zones to donate or claim aid
+              </p>
+              <p className="text-xs text-slate-500 mb-3">
+                Powered by Circle's Cross-Chain Transfer Protocol (CCTP V2) for
+                instant USDC transfers
               </p>
               <div className="flex justify-center space-x-4 text-xs text-slate-500">
                 <div className="flex items-center">

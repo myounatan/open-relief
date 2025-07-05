@@ -21,7 +21,8 @@
     "next": "latest",
     "react": "18.2.0",
     "react-dom": "18.2.0",
-    "react-globe.gl": "^2.34.0"
+    "react-globe.gl": "^2.34.0",
+    "viem": "^2.31.7"
   },
   "devDependencies": {
     "@tsconfig/next": "^2.0.0",

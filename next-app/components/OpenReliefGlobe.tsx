@@ -1,4 +1,4 @@
-import { useLogin } from "@privy-io/react-auth";
+import { useLogin, useWallets } from "@privy-io/react-auth";
 import { useRouter } from "next/router";
 import React, { useEffect, useRef, useState } from "react";
 import Globe from "react-globe.gl";
@@ -7,6 +7,7 @@ import {
   DisasterZoneFeature,
   getPolygonCenter,
 } from "../lib/countryData";
+import DonationModal from "./DonationModal";
 
 // Sample donor locations and arcs
 const DONOR_LOCATIONS = [
@@ -16,7 +17,7 @@ const DONOR_LOCATIONS = [
   { name: "Sydney", lat: -33.8688, lng: 151.2093 },
 ];
 
-// Arc data type definition based on Shopify BFCM approach
+// Arc data type definition
 interface ArcData {
   startLat: number;
   startLng: number;
@@ -51,17 +52,16 @@ const calculateDistance = (
   return R * c;
 };
 
-// Calculate arc altitude based on distance (like Shopify) - FIXED
+// Calculate arc altitude based on distance
 const calculateArcAltitude = (distance: number): number => {
-  // Ensure minimum altitude to prevent arcs going through globe
-  const maxAltitude = 0.4; // Higher max altitude
-  const minAltitude = 0.1; // Higher min altitude to clear the globe
-  const normalizedDistance = Math.min(distance / 20000, 1); // Normalize to 0-1 over 20000km
+  const maxAltitude = 0.4;
+  const minAltitude = 0.1;
+  const normalizedDistance = Math.min(distance / 20000, 1);
   return minAltitude + (maxAltitude - minAltitude) * normalizedDistance;
 };
 
-// Generate donor arcs to disaster zones with realistic timing
-const generateDonorArcs = (currentTime: number): ArcData[] => {
+// Generate donor arcs to disaster zones
+const generateDonorArcs = (): ArcData[] => {
   const arcs: ArcData[] = [];
 
   DONOR_LOCATIONS.forEach((donor, donorIndex) => {
@@ -76,14 +76,6 @@ const generateDonorArcs = (currentTime: number): ArcData[] => {
 
       const altitude = calculateArcAltitude(distance);
 
-      // Stagger arc start times for realistic effect
-      const baseDelay = donorIndex * 1000 + zoneIndex * 500;
-      const randomDelay = Math.random() * 2000;
-
-      // Full-length line with traveling animation effect
-      const dashLength = 0.9; // Full length arc
-      const dashGap = 0.8; // No gap - continuous line
-
       arcs.push({
         startLat: donor.lat,
         startLng: donor.lng,
@@ -92,10 +84,10 @@ const generateDonorArcs = (currentTime: number): ArcData[] => {
         color: ["#22c55e", zone.properties.color],
         altitude: altitude,
         stroke: 0.8,
-        startTime: currentTime + baseDelay + randomDelay,
-        duration: 3000, // Duration based on distance
-        dashLength: dashLength,
-        dashGap: dashGap,
+        startTime: 0,
+        duration: 3000,
+        dashLength: 0.9,
+        dashGap: 0.8,
       });
     });
   });
@@ -112,22 +104,27 @@ interface PopupData {
 const OpenReliefGlobe: React.FC = () => {
   const globeRef = useRef<any>();
   const [popup, setPopup] = useState<PopupData | null>(null);
+  const [donationModalOpen, setDonationModalOpen] = useState(false);
+  const [selectedZone, setSelectedZone] = useState<DisasterZoneFeature | null>(
+    null
+  );
   const [arcsData, setArcsData] = useState<ArcData[]>([]);
   const [dimensions, setDimensions] = useState({ width: 800, height: 600 });
   const [isHovered, setIsHovered] = useState(false);
   const { login } = useLogin();
+  const { wallets } = useWallets();
   const router = useRouter();
 
   useEffect(() => {
-    // Set initial dimensions and arcs data on client side
     if (typeof window !== "undefined") {
       setDimensions({
         width: window.innerWidth,
         height: window.innerHeight,
       });
-      setArcsData(generateDonorArcs(Date.now()));
 
-      // Initialize data
+      // Generate initial arcs
+      const initialArcs = generateDonorArcs();
+      setArcsData(initialArcs);
     }
   }, []);
 
@@ -156,13 +153,6 @@ const OpenReliefGlobe: React.FC = () => {
       // Auto-rotate the globe, but pause on hover
       globeRef.current.controls().autoRotate = !isHovered;
       globeRef.current.controls().autoRotateSpeed = 0.3;
-
-      // Animate arcs periodically
-      const interval = setInterval(() => {
-        setArcsData(generateDonorArcs(Date.now()));
-      }, 5000);
-
-      return () => clearInterval(interval);
     }
   }, [isHovered]);
 
@@ -177,8 +167,15 @@ const OpenReliefGlobe: React.FC = () => {
   };
 
   const handleDonate = () => {
-    setPopup(null);
-    login();
+    if (popup?.zone) {
+      if (wallets.length === 0) {
+        login();
+        return;
+      }
+      setSelectedZone(popup.zone);
+      setDonationModalOpen(true);
+      setPopup(null);
+    }
   };
 
   const handleClaim = () => {
@@ -211,10 +208,9 @@ const OpenReliefGlobe: React.FC = () => {
         showAtmosphere={false}
         atmosphereColor="rgba(100, 116, 139, 0.1)"
         atmosphereAltitude={0.1}
-        // Disaster zones as GeoJSON features - PROPER STRUCTURE
+        // Disaster zones as GeoJSON features
         polygonsData={DISASTER_ZONES}
         polygonCapColor={(d: any) => {
-          // Convert hex to rgba since the globe seems to prefer rgba
           const hexColor = d.properties?.color;
           if (hexColor && hexColor.startsWith("#")) {
             const r = parseInt(hexColor.slice(1, 3), 16);
@@ -222,11 +218,9 @@ const OpenReliefGlobe: React.FC = () => {
             const b = parseInt(hexColor.slice(5, 7), 16);
             return `rgba(${r}, ${g}, ${b}, 0.8)`;
           }
-
           return "rgba(255, 100, 50, 0.8)";
         }}
         polygonSideColor={(d: any) => {
-          // Convert hex to rgba for better compatibility
           const hexColor = d.properties?.color;
           if (hexColor && hexColor.startsWith("#")) {
             const r = parseInt(hexColor.slice(1, 3), 16);
@@ -293,10 +287,10 @@ const OpenReliefGlobe: React.FC = () => {
             </div>
           </div>
         `}
-        // Donor arcs - FIXED TO PREVENT GOING THROUGH GLOBE
+        // Simple arcs - all visible
         arcsData={arcsData}
         arcColor={(d: any) => d?.color || ["#22c55e", "#ff6432"]}
-        arcStroke={(d: any) => d?.stroke || 0.5}
+        arcStroke={(d: any) => d?.stroke || 0.8}
         arcAltitude={(d: any) => d?.altitude || 0.15}
         arcAltitudeAutoScale={0.3}
         arcDashLength={(d: any) => d?.dashLength || 1.0}
@@ -357,6 +351,13 @@ const OpenReliefGlobe: React.FC = () => {
 
       {/* Click outside to close popup */}
       {popup && <div className="fixed inset-0 z-40" onClick={closePopup} />}
+
+      {/* Donation Modal */}
+      <DonationModal
+        isOpen={donationModalOpen}
+        onClose={() => setDonationModalOpen(false)}
+        disasterZone={selectedZone!}
+      />
     </div>
   );
 };
