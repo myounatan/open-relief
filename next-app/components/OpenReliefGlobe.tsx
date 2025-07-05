@@ -1,5 +1,5 @@
 import NumberFlow from "@number-flow/react";
-import { useLogin, useWallets } from "@privy-io/react-auth";
+import { useLogin, usePrivy, useWallets } from "@privy-io/react-auth";
 import Image from "next/image";
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import Globe from "react-globe.gl";
@@ -195,6 +195,7 @@ interface PopupData {
 
 const OpenReliefGlobe: React.FC = () => {
   const globeRef = useRef<any>();
+  const { authenticated } = usePrivy();
   const arcCleanupTimers = useRef<Map<string, NodeJS.Timeout>>(new Map());
   const [popup, setPopup] = useState<PopupData | null>(null);
   const [donationModalOpen, setDonationModalOpen] = useState(false);
@@ -427,7 +428,7 @@ const OpenReliefGlobe: React.FC = () => {
 
   const handleDonate = () => {
     if (popup?.zone) {
-      if (wallets.length === 0) {
+      if (!authenticated || wallets.length === 0) {
         login();
         return;
       }
@@ -439,7 +440,7 @@ const OpenReliefGlobe: React.FC = () => {
 
   const handleClaim = () => {
     if (popup?.zone) {
-      if (wallets.length === 0) {
+      if (!authenticated || wallets.length === 0) {
         login();
         return;
       }
@@ -451,7 +452,7 @@ const OpenReliefGlobe: React.FC = () => {
 
   const handleVerificationSuccess = (verificationData: any) => {
     console.log("Identity verified:", verificationData);
-    setIdentityVerificationOpen(false);
+    // setIdentityVerificationOpen(false);
     // Just close the modal - no redirect needed
     // Future: handle claim modal based on query parameters
   };

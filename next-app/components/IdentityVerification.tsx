@@ -177,15 +177,17 @@ const IdentityVerification: React.FC<IdentityVerificationProps> = ({
           </button>
         </div>
 
-        <div className="mb-4">
-          <p className="text-sm text-slate-300 mb-2">
-            To claim aid from {disasterZone.properties.name}, you need to verify
-            your identity using your government-issued passport.
-          </p>
-          <div className="text-xs text-slate-500">
-            This ensures aid reaches verified individuals in affected areas.
+        {verificationStatus === "idle" && (
+          <div className="mb-4">
+            <p className="text-sm text-slate-300 mb-2">
+              To claim aid from {disasterZone.properties.name}, you need to
+              verify your identity using your government-issued passport.
+            </p>
+            <div className="text-xs text-slate-500">
+              This ensures aid reaches verified individuals in affected areas.
+            </div>
           </div>
-        </div>
+        )}
 
         {verificationStatus === "idle" && (
           <>
@@ -298,17 +300,16 @@ const IdentityVerification: React.FC<IdentityVerificationProps> = ({
           <div className="text-center">
             <div className="text-green-500 text-4xl mb-4">✓</div>
             <h3 className="text-lg font-semibold text-white mb-2">
-              Identity Verified!
+              Identity Verified and your claim has been processed!
             </h3>
             <p className="text-sm text-slate-300 mb-4">
-              Your identity has been successfully verified. You can now proceed
-              to claim aid.
+              You can now close this window.
             </p>
             <button
               onClick={onClose}
               className="w-full bg-green-600 hover:bg-green-700 text-white py-2 px-4 rounded-lg font-medium transition-colors"
             >
-              Continue to Claim
+              Close
             </button>
           </div>
         )}
