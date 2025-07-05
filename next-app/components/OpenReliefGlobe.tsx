@@ -8,6 +8,7 @@ import {
   getPolygonCenter,
 } from "../lib/countryData";
 import DonationModal from "./DonationModal";
+import IdentityVerification from "./IdentityVerification";
 
 // Sample donor locations and arcs
 const DONOR_LOCATIONS = [
@@ -37,7 +38,7 @@ const calculateDistance = (
   lat1: number,
   lng1: number,
   lat2: number,
-  lng2: number,
+  lng2: number
 ): number => {
   const R = 6371; // Earth's radius in km
   const dLat = ((lat2 - lat1) * Math.PI) / 180;
@@ -71,7 +72,7 @@ const generateDonorArcs = (): ArcData[] => {
         donor.lat,
         donor.lng,
         center[1],
-        center[0],
+        center[0]
       );
 
       const altitude = calculateArcAltitude(distance);
@@ -105,8 +106,10 @@ const OpenReliefGlobe: React.FC = () => {
   const globeRef = useRef<any>();
   const [popup, setPopup] = useState<PopupData | null>(null);
   const [donationModalOpen, setDonationModalOpen] = useState(false);
+  const [identityVerificationOpen, setIdentityVerificationOpen] =
+    useState(false);
   const [selectedZone, setSelectedZone] = useState<DisasterZoneFeature | null>(
-    null,
+    null
   );
   const [arcsData, setArcsData] = useState<ArcData[]>([]);
   const [dimensions, setDimensions] = useState({ width: 800, height: 600 });
@@ -179,8 +182,29 @@ const OpenReliefGlobe: React.FC = () => {
   };
 
   const handleClaim = () => {
-    setPopup(null);
-    router.push("/dashboard");
+    if (popup?.zone) {
+      if (wallets.length === 0) {
+        login();
+        return;
+      }
+      setSelectedZone(popup.zone);
+      setIdentityVerificationOpen(true);
+      setPopup(null);
+    }
+  };
+
+  const handleVerificationSuccess = (verificationData: any) => {
+    console.log("Identity verified:", verificationData);
+    setIdentityVerificationOpen(false);
+    // Redirect to dashboard with verification data
+    router.push({
+      pathname: "/dashboard",
+      query: {
+        verified: "true",
+        poolId: verificationData.poolId,
+        userId: verificationData.userId,
+      },
+    });
   };
 
   const closePopup = () => {
@@ -356,6 +380,14 @@ const OpenReliefGlobe: React.FC = () => {
       <DonationModal
         isOpen={donationModalOpen}
         onClose={() => setDonationModalOpen(false)}
+        disasterZone={selectedZone!}
+      />
+
+      {/* Identity Verification Modal */}
+      <IdentityVerification
+        isOpen={identityVerificationOpen}
+        onClose={() => setIdentityVerificationOpen(false)}
+        onVerificationSuccess={handleVerificationSuccess}
         disasterZone={selectedZone!}
       />
     </div>

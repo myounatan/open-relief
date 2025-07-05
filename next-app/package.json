@@ -18,13 +18,17 @@
     "@heroicons/react": "^2.0.12",
     "@privy-io/react-auth": "^2.12.0",
     "@privy-io/server-auth": "1.21.2",
+    "@selfxyz/core": "1.0.5-beta.1",
+    "@selfxyz/qrcode": "1.0.10-beta.1",
     "@tailwindcss/forms": "^0.5.3",
+    "@types/uuid": "^10.0.0",
     "axios": "^1.9.0",
     "ethers": "^6.15.0",
     "next": "latest",
     "react": "18.2.0",
     "react-dom": "18.2.0",
     "react-globe.gl": "^2.34.0",
+    "uuid": "^11.1.0",
     "viem": "^2.31.7"
   },
   "devDependencies": {
