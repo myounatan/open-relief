@@ -95,6 +95,8 @@ async function processIdentityVerification(
     transport: http("https://base-sepolia.g.alchemy.com/v2/gnEEOpfvZaF3wgNmaaDN_7u00kUCctET"),
   });
 
+  const reliefPoolId = decodePoolId(eventData.reliefPoolId);
+
   // Call claimRelief on ReliefPools contract
   console.log("📋 Calling claimRelief on ReliefPools contract...");
   const claimReliefTx = await walletClient.writeContract({
@@ -102,7 +104,7 @@ async function processIdentityVerification(
     abi: RELIEF_POOLS_ABI,
     functionName: "claimRelief",
     args: [
-      eventData.reliefPoolId,
+      reliefPoolId,
       eventData.nullifier,
       eventData.userIdentifier,
       eventData.nationality,
@@ -115,6 +117,12 @@ async function processIdentityVerification(
   return claimReliefTx;
 }
 
+function decodePoolId(hexString: string) {
+  const cleanHex = hexString.startsWith('0x') ? hexString.slice(2) : hexString;
+  const buffer = Buffer.from(cleanHex, 'hex');
+  return buffer.toString('utf8').replace(/\0+$/, '');
+}
+
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
@@ -123,72 +131,75 @@ export default async function handler(
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
+  const payload: any = req.body;
+
   try {
-    console.log('📨 Received webhook payload:', JSON.stringify(req.body, null, 2));
-
-    const { type, event } = req.body;
-
-    // Validate webhook type
-    if (type !== 'ADDRESS_ACTIVITY') {
-      console.log(`⚠️  Ignoring webhook type: ${type}`);
-      return res.status(200).json({ message: 'Webhook received but not processed' });
-    }
-
-    // Validate activity type
-    if (event?.activity?.[0]?.category !== 'external') {
-      console.log('⚠️  Ignoring non-external activity');
-      return res.status(200).json({ message: 'Webhook received but not processed' });
-    }
-
-    const activity = event.activity[0];
-    const transactionHash = activity.hash;
-
-    // Check if we've already processed this transaction
-    if (processedEvents.has(transactionHash)) {
-      console.log(`⚠️  Transaction already processed: ${transactionHash}`);
-      return res.status(200).json({ message: 'Transaction already processed' });
-    }
-
-    // Find UserVerified event in the logs
-    const userVerifiedEventSignature = keccak256(toHex('UserVerified(uint256,uint256,string,address,string,uint256)'));
-    const userVerifiedLog = activity.log?.find((log: any) => 
-      log.topics && log.topics[0] === userVerifiedEventSignature
-    );
-
-    if (!userVerifiedLog) {
-      console.log('⚠️  UserVerified event not found in transaction logs');
-      return res.status(200).json({ message: 'UserVerified event not found' });
-    }
-
-    // Decode the UserVerified event
-    const eventData = decodeUserVerifiedEvent(userVerifiedLog);
+    console.log('🎣 Received Identity Verification webhook');
     
-    // Process the identity verification
-    const txHash = await processIdentityVerification({
-      nullifier: eventData.nullifier,
-      userIdentifier: eventData.userIdentifier,
-      nationality: eventData.nationality,
-      userAddress: eventData.userAddress,
-      reliefPoolId: eventData.reliefPoolId,
-      timestamp: eventData.timestamp,
-    });
+    // Validate payload structure
+    if (!payload.event?.data) {
+      return res.status(400).json({ error: 'Invalid webhook payload' });
+    }
 
-    // Mark as processed
-    processedEvents.add(transactionHash);
+    if (processedEvents.has(payload.webhookId)) {
+      console.log(`⏭️⏭️⏭️ Skipping already processed transaction: ${payload.webhookId}`);
+      return res.status(200).json({
+        success: true
+      });
+    }
+    processedEvents.add(payload.webhookId);
 
-    console.log(`🎉 Identity verification processed successfully: ${txHash}`);
-    
+    console.log('📨 Processing webhook payload...');
+  
+    // Process each log in the webhook
+    for (const log of payload.event.data.block.logs) {
+      try {
+
+        console.log(`✅ UserVerified event detected: ${log.transaction.hash}`);
+
+        // Check if we've already processed this specific transaction
+        if (processedEvents.has(log.transaction.hash)) {
+          console.log(`⚠️  Transaction already processed: ${log.transaction.hash}`);
+          continue;
+        }
+
+        // Decode the UserVerified event
+        const eventData = decodeUserVerifiedEvent(log);
+        
+        // Process the identity verification
+        const txHash = await processIdentityVerification({
+          nullifier: eventData.nullifier,
+          userIdentifier: eventData.userIdentifier,
+          nationality: eventData.nationality,
+          userAddress: eventData.userAddress,
+          reliefPoolId: eventData.reliefPoolId,
+          timestamp: eventData.timestamp,
+        });
+
+        // Mark as processed
+        processedEvents.add(log.transaction.hash);
+
+        console.log(`🎉 Identity verification processed successfully: ${txHash}`);
+
+      } catch (error: any) {
+        console.error(`❌ Failed to process transaction ${log.transaction.hash}:`, error.message);
+        // Continue processing other transactions even if one fails
+      }
+    }
+
     return res.status(200).json({
-      message: 'Identity verification processed successfully',
-      claimReliefTx: txHash,
+      success: true
     });
 
-  } catch (error) {
-    console.error('❌ Error processing identity verification webhook:', error);
-    
+  } catch (error: any) {
+    console.error('❌ Webhook processing failed:', error.message);
+
+    // remove webhookId from processedEvents
+    processedEvents.delete(payload.webhookId);
+
     return res.status(500).json({
-      error: 'Internal server error',
-      message: error instanceof Error ? error.message : 'Unknown error',
+      success: false,
+      error: error.message,
     });
   }
 } 
