@@ -59,7 +59,6 @@ export interface IdentityVerifierInterface extends Interface {
       | "getConfigId()"
       | "getConfigId(bytes32,bytes32,bytes)"
       | "getMessageHash"
-      | "getScope"
       | "getVerificationData"
       | "isUserVerified"
       | "onVerificationSuccess"
@@ -114,7 +113,6 @@ export interface IdentityVerifierInterface extends Interface {
     functionFragment: "getMessageHash",
     values: [AddressLike, BigNumberish, BigNumberish, string, BigNumberish]
   ): string;
-  encodeFunctionData(functionFragment: "getScope", values?: undefined): string;
   encodeFunctionData(
     functionFragment: "getVerificationData",
     values: [AddressLike]
@@ -194,7 +192,6 @@ export interface IdentityVerifierInterface extends Interface {
     functionFragment: "getMessageHash",
     data: BytesLike
   ): Result;
-  decodeFunctionResult(functionFragment: "getScope", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "getVerificationData",
     data: BytesLike
@@ -386,8 +383,6 @@ export interface IdentityVerifier extends BaseContract {
     "view"
   >;
 
-  getScope: TypedContractMethod<[], [bigint], "view">;
-
   getVerificationData: TypedContractMethod<
     [userAddress: AddressLike],
     [IdentityVerifier.VerificationDataStructOutput],
@@ -498,9 +493,6 @@ export interface IdentityVerifier extends BaseContract {
     [string],
     "view"
   >;
-  getFunction(
-    nameOrSignature: "getScope"
-  ): TypedContractMethod<[], [bigint], "view">;
   getFunction(
     nameOrSignature: "getVerificationData"
   ): TypedContractMethod<
