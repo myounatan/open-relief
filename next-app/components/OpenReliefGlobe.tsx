@@ -37,7 +37,7 @@ const calculateDistance = (
   lat1: number,
   lng1: number,
   lat2: number,
-  lng2: number
+  lng2: number,
 ): number => {
   const R = 6371; // Earth's radius in km
   const dLat = ((lat2 - lat1) * Math.PI) / 180;
@@ -64,14 +64,14 @@ const calculateArcAltitude = (distance: number): number => {
 const generateDonorArcs = (): ArcData[] => {
   const arcs: ArcData[] = [];
 
-  DONOR_LOCATIONS.forEach((donor, donorIndex) => {
-    DISASTER_ZONES.forEach((zone, zoneIndex) => {
+  DONOR_LOCATIONS.forEach((donor) => {
+    DISASTER_ZONES.forEach((zone) => {
       const center = getPolygonCenter(zone);
       const distance = calculateDistance(
         donor.lat,
         donor.lng,
         center[1],
-        center[0]
+        center[0],
       );
 
       const altitude = calculateArcAltitude(distance);
@@ -106,7 +106,7 @@ const OpenReliefGlobe: React.FC = () => {
   const [popup, setPopup] = useState<PopupData | null>(null);
   const [donationModalOpen, setDonationModalOpen] = useState(false);
   const [selectedZone, setSelectedZone] = useState<DisasterZoneFeature | null>(
-    null
+    null,
   );
   const [arcsData, setArcsData] = useState<ArcData[]>([]);
   const [dimensions, setDimensions] = useState({ width: 800, height: 600 });
@@ -251,8 +251,8 @@ const OpenReliefGlobe: React.FC = () => {
             </div>
             <div style="font-size: 11px; color: #ef4444;">
               ${d.properties?.disasterType || "Unknown"} - ${
-          d.properties?.severity || "Unknown"
-        } severity
+                d.properties?.severity || "Unknown"
+              } severity
             </div>
           </div>
         `}

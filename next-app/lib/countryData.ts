@@ -37,7 +37,7 @@ export interface DisasterZoneFeature {
 // Color assignment function based on disaster type and severity
 export const getDisasterColor = (
   type: "earthquake" | "flood" | "fire" | "typhoon" | "hurricane" | "war",
-  severity: "high" | "medium" | "low"
+  severity: "high" | "medium" | "low",
 ): string => {
   switch (type) {
     case "war":
@@ -374,7 +374,7 @@ export const DISASTER_ZONES: DisasterZoneFeature[] = [
 
 // Helper function to get center coordinates from a polygon
 export const getPolygonCenter = (
-  feature: DisasterZoneFeature
+  feature: DisasterZoneFeature,
 ): [number, number] => {
   const coords = feature.geometry.coordinates[0];
   if (!coords || coords.length === 0) {

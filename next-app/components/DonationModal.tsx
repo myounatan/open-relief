@@ -1,5 +1,5 @@
 import { useWallets } from "@privy-io/react-auth";
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { CCTPV2Service, SupportedChain } from "../lib/cctpV2Service";
 import { circleGasService } from "../lib/circleGasService";
 import { DisasterZoneFeature } from "../lib/countryData";
@@ -39,15 +39,9 @@ const DonationModal: React.FC<DonationModalProps> = ({
   const [gasless, setGasless] = useState(true); // Default to gasless
   const [wasGasSponsored, setWasGasSponsored] = useState(false);
 
-  const cctpService = new CCTPV2Service();
+  const cctpService = useMemo(() => new CCTPV2Service(), []);
 
-  useEffect(() => {
-    if (isOpen && wallets[0]) {
-      fetchBalances();
-    }
-  }, [isOpen, wallets]);
-
-  const fetchBalances = async () => {
+  const fetchBalances = useCallback(async () => {
     if (!wallets[0]) return;
 
     try {
@@ -57,7 +51,13 @@ const DonationModal: React.FC<DonationModalProps> = ({
     } catch (error) {
       console.error("Error fetching balances:", error);
     }
-  };
+  }, [wallets, cctpService]);
+
+  useEffect(() => {
+    if (isOpen && wallets[0]) {
+      fetchBalances();
+    }
+  }, [isOpen, wallets, fetchBalances]);
 
   // Check if gasless is supported for selected chain
   const isGaslessSupported = () => {
@@ -80,7 +80,6 @@ const DonationModal: React.FC<DonationModalProps> = ({
       setCurrentStep("approving");
       const approveTx = await cctpService.approveUSDC({
         sourceChain: selectedChain,
-        amount,
         privyWallet,
         gasless: gasless && isGaslessSupported(),
       });
@@ -107,7 +106,7 @@ const DonationModal: React.FC<DonationModalProps> = ({
       setCurrentStep("waiting");
       const attestation = await cctpService.retrieveAttestation(
         burnTx,
-        selectedChain
+        selectedChain,
       );
       console.log("Attestation received:", attestation);
 
@@ -116,11 +115,20 @@ const DonationModal: React.FC<DonationModalProps> = ({
 
       // Refresh balances
       await fetchBalances();
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Donation error:", error);
+      const errorMessage =
+        error instanceof Error ? error.message : "Transaction failed";
+      const errorDetails =
+        error instanceof Error && "reason" in error
+          ? (error as Error & { reason?: string; details?: string }).reason ||
+            (error as Error & { reason?: string; details?: string }).details ||
+            "Unknown error occurred"
+          : "Unknown error occurred";
+
       setError({
-        message: error.message || "Transaction failed",
-        details: error.reason || error.details || "Unknown error occurred",
+        message: errorMessage,
+        details: errorDetails,
       });
       setCurrentStep("error");
     } finally {
@@ -186,7 +194,7 @@ const DonationModal: React.FC<DonationModalProps> = ({
         </div>
 
         {/* Gas Station Feature */}
-        {isGaslessSupported() && (
+        {isGaslessSupported() === true && (
           <div className="mb-4 p-3 bg-gradient-to-r from-blue-900/50 to-purple-900/50 rounded-lg border border-blue-500/30">
             <div className="flex items-center justify-between mb-2">
               <div className="flex items-center space-x-2">
@@ -218,7 +226,7 @@ const DonationModal: React.FC<DonationModalProps> = ({
         )}
 
         {/* Gas Savings Display */}
-        {wasGasSponsored && currentStep === "complete" && (
+        {wasGasSponsored === true && currentStep === "complete" && (
           <div className="mb-4 p-3 bg-green-900/30 rounded-lg border border-green-500/30">
             <div className="flex items-center space-x-2 mb-1">
               <span className="text-green-400">💰</span>
@@ -250,12 +258,12 @@ const DonationModal: React.FC<DonationModalProps> = ({
               {currentStep === "complete"
                 ? "4/4"
                 : currentStep === "waiting"
-                ? "3/4"
-                : currentStep === "burning"
-                ? "2/4"
-                : currentStep === "approving"
-                ? "1/4"
-                : "0/4"}
+                  ? "3/4"
+                  : currentStep === "burning"
+                    ? "2/4"
+                    : currentStep === "approving"
+                      ? "1/4"
+                      : "0/4"}
             </span>
           </div>
           <div className="w-full bg-slate-600 rounded-full h-2">
@@ -264,12 +272,12 @@ const DonationModal: React.FC<DonationModalProps> = ({
                 currentStep === "complete"
                   ? "bg-green-500 w-full"
                   : currentStep === "waiting"
-                  ? "bg-blue-500 w-3/4"
-                  : currentStep === "burning"
-                  ? "bg-yellow-500 w-2/4"
-                  : currentStep === "approving"
-                  ? "bg-orange-500 w-1/4"
-                  : "bg-slate-500 w-0"
+                    ? "bg-blue-500 w-3/4"
+                    : currentStep === "burning"
+                      ? "bg-yellow-500 w-2/4"
+                      : currentStep === "approving"
+                        ? "bg-orange-500 w-1/4"
+                        : "bg-slate-500 w-0"
               }`}
             />
           </div>
@@ -337,7 +345,7 @@ const DonationModal: React.FC<DonationModalProps> = ({
               {amount} USDC from {cctpService.getChainName(selectedChain)} to{" "}
               {destinationInfo.chain}
             </p>
-            {txHash && (
+            {Boolean(txHash) && (
               <p className="text-xs text-slate-500 mt-2 break-all">
                 Transaction: {txHash}
               </p>
@@ -374,8 +382,8 @@ const DonationModal: React.FC<DonationModalProps> = ({
               Transaction Failed
             </h3>
             <p className="text-sm text-slate-300 mb-2">{error?.message}</p>
-            {error?.details && (
-              <p className="text-xs text-slate-500 mb-4">{error.details}</p>
+            {Boolean(error?.details) && (
+              <p className="text-xs text-slate-500 mb-4">{error!.details}</p>
             )}
             <div className="space-y-2">
               <button

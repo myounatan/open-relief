@@ -53,7 +53,7 @@ export class CircleGasService {
    */
   async sendGaslessTransaction(
     walletClient: WalletClient,
-    request: GaslessTransactionRequest
+    request: GaslessTransactionRequest,
   ): Promise<GaslessTransactionResponse> {
     try {
       const chainId = await walletClient.getChainId();
@@ -106,7 +106,7 @@ export class CircleGasService {
    * - Arbitrum Sepolia: 50 ETH/day
    * - Optimism Sepolia: 50 ETH/day
    */
-  async isWalletEligible(address: string, chainId: number): Promise<boolean> {
+  async isWalletEligible(chainId: number): Promise<boolean> {
     if (!this.isGaslessSupported(chainId)) {
       return false;
     }
@@ -119,8 +119,8 @@ export class CircleGasService {
    * Get estimated gas savings from using Circle Gas Station
    */
   async getGasSavings(
-    chainId: number,
-    gasUsed: bigint
+    _chainId: number,
+    gasUsed: bigint,
   ): Promise<{
     nativeTokenSaved: string;
     usdSaved: string;
@@ -146,7 +146,7 @@ export class CircleGasService {
       data?: string;
       value?: bigint;
     },
-    fallbackFn: () => Promise<T>
+    fallbackFn: () => Promise<T>,
   ): Promise<{ result: T; wasGasless: boolean }> {
     const chainId = await walletClient.getChainId();
 
@@ -173,7 +173,7 @@ export class CircleGasService {
     } catch (error) {
       console.warn(
         "Gasless transaction failed, falling back to regular transaction:",
-        error
+        error,
       );
     }
 

@@ -4,17 +4,26 @@ import {
   createPrivyClient,
   fetchAndVerifyAuthorization,
 } from "../../../lib/utils";
-import { WalletApiRpcResponseType } from "@privy-io/public-api";
+
+// Type definition for wallet API response
+interface WalletApiRpcResponseType {
+  method: string;
+  data: {
+    signature: string;
+    encoding: string;
+  };
+}
+
 const client = createPrivyClient();
 
 export default async function POST(
   req: NextApiRequest,
-  res: NextApiResponse<WalletApiRpcResponseType | APIError>
+  res: NextApiResponse<WalletApiRpcResponseType | APIError>,
 ) {
   const errorOrVerifiedClaims = await fetchAndVerifyAuthorization(
     req,
     res,
-    client
+    client,
   );
   const authorized = errorOrVerifiedClaims && "appId" in errorOrVerifiedClaims;
   if (!authorized) return errorOrVerifiedClaims;

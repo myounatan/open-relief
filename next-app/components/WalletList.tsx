@@ -19,9 +19,9 @@ export default function WalletList() {
         (account) =>
           account.type === "wallet" &&
           account.walletClientType === "privy" &&
-          account.chainType === "ethereum"
+          account.chainType === "ethereum",
       ) as WalletWithMetadata[]) ?? [],
-    [user]
+    [user],
   );
 
   const solanaEmbeddedWallets = useMemo<WalletWithMetadata[]>(
@@ -30,9 +30,9 @@ export default function WalletList() {
         (account) =>
           account.type === "wallet" &&
           account.walletClientType === "privy" &&
-          account.chainType === "solana"
+          account.chainType === "solana",
       ) as WalletWithMetadata[]) ?? [],
-    [user]
+    [user],
   );
 
   const handleCreateWallet = useCallback(
@@ -50,7 +50,7 @@ export default function WalletList() {
         setIsCreating(false);
       }
     },
-    [createEthereumWallet, createSolanaWallet]
+    [createEthereumWallet, createSolanaWallet],
   );
 
   return (

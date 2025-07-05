@@ -1,5 +1,5 @@
 import { usePrivy, useWallets } from "@privy-io/react-auth";
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { CCTPV2Service, SupportedChain } from "../lib/cctpV2Service";
 
 interface AccountModalProps {
@@ -13,15 +13,9 @@ const AccountModal: React.FC<AccountModalProps> = ({ isOpen, onClose }) => {
   const [balances, setBalances] = useState<Record<string, string>>({});
   const [isLoading, setIsLoading] = useState(false);
 
-  const cctpService = new CCTPV2Service();
+  const cctpService = useMemo(() => new CCTPV2Service(), []);
 
-  useEffect(() => {
-    if (isOpen && wallets[0] && authenticated) {
-      fetchBalances();
-    }
-  }, [isOpen, wallets, authenticated]);
-
-  const fetchBalances = async () => {
+  const fetchBalances = useCallback(async () => {
     if (!wallets[0]) return;
 
     setIsLoading(true);
@@ -34,7 +28,13 @@ const AccountModal: React.FC<AccountModalProps> = ({ isOpen, onClose }) => {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [wallets, cctpService]);
+
+  useEffect(() => {
+    if (isOpen && wallets[0] && authenticated) {
+      fetchBalances();
+    }
+  }, [isOpen, wallets, authenticated, fetchBalances]);
 
   const handleFundWallet = (chain: SupportedChain) => {
     // Open external funding resources

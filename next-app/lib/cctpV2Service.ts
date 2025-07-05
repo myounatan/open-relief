@@ -18,7 +18,16 @@ import { circleGasService } from "./circleGasService";
 
 // OpenRelief Donation Pool Contract on Base Sepolia
 export const DONATION_POOL_CONTRACT =
-  "0x1A50E5f8d7b62ED17e723d385577c9A5C0641A59"; // Replace with actual contract address
+  process.env.NEXT_PUBLIC_DONATION_POOL_CONTRACT!;
+
+// Type definitions for Circle attestation
+export interface CircleAttestation {
+  message: string;
+  attestation: string;
+  status: string;
+  messageHash?: string;
+  messageBody?: string;
+}
 
 // CCTP V2 Contract Addresses and Configuration (Testnet)
 const CCTP_CONTRACTS = {
@@ -199,12 +208,10 @@ export class CCTPV2Service {
 
   async approveUSDC({
     sourceChain,
-    amount,
     privyWallet,
     gasless = false,
   }: {
     sourceChain: SupportedChain;
-    amount: string;
     privyWallet: any;
     gasless?: boolean;
   }): Promise<string> {
@@ -404,7 +411,7 @@ export class CCTPV2Service {
   async retrieveAttestation(
     transactionHash: string,
     sourceChain: SupportedChain
-  ): Promise<any> {
+  ): Promise<CircleAttestation> {
     const sourceDomain = CCTP_CONTRACTS[sourceChain].domain;
     const url = `https://iris-api-sandbox.circle.com/v2/messages/${sourceDomain}?transactionHash=${transactionHash}`;
 
@@ -443,7 +450,10 @@ export class CCTPV2Service {
     throw new Error("Attestation timeout - transfer may still be processing");
   }
 
-  async mintUSDC(attestation: any, privyWallet: any): Promise<string> {
+  async mintUSDC(
+    attestation: CircleAttestation,
+    privyWallet: any
+  ): Promise<string> {
     // Always mint on Base Sepolia
     const destinationChain = "baseSepolia";
 

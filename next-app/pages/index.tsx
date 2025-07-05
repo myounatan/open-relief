@@ -78,8 +78,8 @@ export default function HomePage({ authenticated, userId }: HomePageProps) {
                 Click on highlighted disaster zones to donate or claim aid
               </p>
               <p className="text-xs text-slate-500 mb-3">
-                Powered by Circle's Cross-Chain Transfer Protocol (CCTP V2) for
-                instant USDC transfers • Gas fees sponsored by Circle Gas
+                Powered by Circle&apos;s Cross-Chain Transfer Protocol (CCTP V2)
+                for instant USDC transfers • Gas fees sponsored by Circle Gas
                 Station
               </p>
               <div className="flex justify-center space-x-4 text-xs text-slate-500">
@@ -113,7 +113,7 @@ export default function HomePage({ authenticated, userId }: HomePageProps) {
         </div>
 
         {/* Debug info in development */}
-        {process.env.NODE_ENV === "development" && authenticated && (
+        {process.env.NODE_ENV === "development" && authenticated && userId && (
           <div className="absolute top-20 right-4 bg-green-900/50 text-green-300 px-2 py-1 rounded text-xs">
             Server auth: ✓ {userId}
           </div>

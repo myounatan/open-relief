@@ -1,6 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 
-import { PrivyClient, AuthTokenClaims } from "@privy-io/server-auth";
+import { AuthTokenClaims, PrivyClient } from "@privy-io/server-auth";
 
 const PRIVY_APP_ID = process.env.NEXT_PUBLIC_PRIVY_APP_ID;
 const PRIVY_APP_SECRET = process.env.PRIVY_APP_SECRET;
@@ -29,8 +29,9 @@ async function handler(
   try {
     const claims = await client.verifyAuthToken(authToken);
     return res.status(200).json({ claims });
-  } catch (e: any) {
-    return res.status(401).json({ error: e.message });
+  } catch (e: unknown) {
+    const error = e instanceof Error ? e.message : "Authentication failed";
+    return res.status(401).json({ error });
   }
 }
 

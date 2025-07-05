@@ -1,0 +1,42 @@
+{
+  "extends": ["next/core-web-vitals", "next/typescript"],
+  "rules": {
+    // Treat unused variables as errors (now handled by TypeScript ESLint)
+    "@typescript-eslint/no-unused-vars": [
+      "error",
+      {
+        "argsIgnorePattern": "^_",
+        "varsIgnorePattern": "^_",
+        "caughtErrorsIgnorePattern": "^_"
+      }
+    ],
+
+    // Change any types to warnings instead of errors
+    "@typescript-eslint/no-explicit-any": "warn",
+
+    // Common code quality rules as errors
+    "no-console": "warn",
+    "no-debugger": "error",
+    "no-duplicate-imports": "error",
+    "prefer-const": "error",
+    "no-var": "error",
+
+    // React specific rules
+    "react-hooks/exhaustive-deps": "error",
+    "react/jsx-no-leaked-render": "off",
+
+    // Next.js specific rules as errors
+    "@next/next/no-img-element": "error",
+    "@next/next/no-html-link-for-pages": "error",
+    "@next/next/no-page-custom-font": "error"
+  },
+  "parserOptions": {
+    "ecmaVersion": "latest",
+    "sourceType": "module"
+  },
+  "env": {
+    "browser": true,
+    "node": true,
+    "es6": true
+  }
+}

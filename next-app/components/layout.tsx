@@ -1,8 +1,7 @@
-import React, { useEffect } from "react";
 import { usePrivy } from "@privy-io/react-auth";
-import Navbar from "./navbar";
-import type { NavbarItem } from "./navbar";
 import { useRouter } from "next/router";
+import React, { useEffect } from "react";
+import Navbar, { type NavbarItem } from "./navbar";
 
 type Props = {
   children?: React.ReactNode;

@@ -1,4 +1,3 @@
-import { useCallback, useState } from "react";
 import {
   getAccessToken,
   useSessionSigners,
@@ -7,6 +6,7 @@ import {
   WalletWithMetadata,
 } from "@privy-io/react-auth";
 import axios from "axios";
+import { useCallback, useState } from "react";
 
 const SESSION_SIGNER_ID = process.env.NEXT_PUBLIC_SESSION_SIGNER_ID;
 
@@ -50,7 +50,7 @@ export default function WalletCard({ wallet }: WalletCardProps) {
         setIsLoading(false);
       }
     },
-    [addSessionSigners]
+    [addSessionSigners],
   );
 
   const removeSessionSigner = useCallback(
@@ -64,7 +64,7 @@ export default function WalletCard({ wallet }: WalletCardProps) {
         setIsLoading(false);
       }
     },
-    [removeSessionSigners]
+    [removeSessionSigners],
   );
 
   const handleClientSign = useCallback(async () => {
@@ -87,7 +87,12 @@ export default function WalletCard({ wallet }: WalletCardProps) {
     } finally {
       setIsClientSigning(false);
     }
-  }, [wallet]);
+  }, [
+    wallet.address,
+    wallet.chainType,
+    signMessageEthereum,
+    signMessageSolana,
+  ]);
 
   const handleRemoteSign = useCallback(async () => {
     setIsRemoteSigning(true);
@@ -108,14 +113,14 @@ export default function WalletCard({ wallet }: WalletCardProps) {
           headers: {
             Authorization: `Bearer ${authToken}`,
           },
-        }
+        },
       );
 
       const data = response.data;
 
       if (response.status === 200) {
         console.log(
-          "Message signed on server! Signature: " + data.data.signature
+          "Message signed on server! Signature: " + data.data.signature,
         );
       } else {
         throw new Error(data.error || "Failed to sign message");
@@ -125,7 +130,7 @@ export default function WalletCard({ wallet }: WalletCardProps) {
     } finally {
       setIsRemoteSigning(false);
     }
-  }, [wallet.id]);
+  }, [wallet.address, wallet.chainType, wallet.id]);
 
   return (
     <div className="flex flex-col gap-4 p-4 border border-gray-200 rounded-lg">
@@ -161,7 +166,7 @@ export default function WalletCard({ wallet }: WalletCardProps) {
         </button>
       </div>
 
-      {hasSessionSigners && (
+      {hasSessionSigners === true && (
         <div className="mt-2 text-sm text-gray-600">
           This wallet has active session signers
         </div>
