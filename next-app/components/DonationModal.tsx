@@ -1,6 +1,7 @@
 import { useWallets } from "@privy-io/react-auth";
 import React, { useEffect, useState } from "react";
 import { CCTPV2Service, SupportedChain } from "../lib/cctpV2Service";
+import { circleGasService } from "../lib/circleGasService";
 import { DisasterZoneFeature } from "../lib/countryData";
 
 interface DonationModalProps {
@@ -35,6 +36,8 @@ const DonationModal: React.FC<DonationModalProps> = ({
   const [error, setError] = useState<TransactionError | null>(null);
   const [txHash, setTxHash] = useState<string>("");
   const [isLoading, setIsLoading] = useState(false);
+  const [gasless, setGasless] = useState(true); // Default to gasless
+  const [wasGasSponsored, setWasGasSponsored] = useState(false);
 
   const cctpService = new CCTPV2Service();
 
@@ -56,11 +59,18 @@ const DonationModal: React.FC<DonationModalProps> = ({
     }
   };
 
+  // Check if gasless is supported for selected chain
+  const isGaslessSupported = () => {
+    const chainId = cctpService.getChainId(selectedChain);
+    return circleGasService.isGaslessSupported(chainId);
+  };
+
   const handleDonation = async () => {
     if (!wallets[0] || !amount) return;
 
     setIsLoading(true);
     setError(null);
+    setWasGasSponsored(false);
 
     try {
       const privyWallet = wallets[0];
@@ -72,6 +82,7 @@ const DonationModal: React.FC<DonationModalProps> = ({
         sourceChain: selectedChain,
         amount,
         privyWallet,
+        gasless: gasless && isGaslessSupported(),
       });
       console.log("Approval transaction:", approveTx);
 
@@ -82,9 +93,15 @@ const DonationModal: React.FC<DonationModalProps> = ({
         amount,
         poolId,
         privyWallet,
+        gasless: gasless && isGaslessSupported(),
       });
       console.log("Burn transaction:", burnTx);
       setTxHash(burnTx);
+
+      // Check if gas was sponsored
+      if (gasless && isGaslessSupported()) {
+        setWasGasSponsored(true);
+      }
 
       // Step 3: Wait for attestation
       setCurrentStep("waiting");
@@ -117,16 +134,18 @@ const DonationModal: React.FC<DonationModalProps> = ({
     setTxHash("");
     setAmount("");
     setIsLoading(false);
+    setWasGasSponsored(false);
   };
 
   const getStepDescription = () => {
+    const gaslessText = gasless && isGaslessSupported() ? " (Gas-free)" : "";
     switch (currentStep) {
       case "selecting":
         return "Select your donation amount and source chain";
       case "approving":
-        return "Approving USDC transfer...";
+        return `Approving USDC transfer${gaslessText}...`;
       case "burning":
-        return "Initiating cross-chain transfer...";
+        return `Initiating cross-chain transfer${gaslessText}...`;
       case "waiting":
         return "Waiting for cross-chain confirmation (8-20 seconds)...";
       case "complete":
@@ -165,6 +184,54 @@ const DonationModal: React.FC<DonationModalProps> = ({
             Pool ID: {disasterZone.properties.id}
           </div>
         </div>
+
+        {/* Gas Station Feature */}
+        {isGaslessSupported() && (
+          <div className="mb-4 p-3 bg-gradient-to-r from-blue-900/50 to-purple-900/50 rounded-lg border border-blue-500/30">
+            <div className="flex items-center justify-between mb-2">
+              <div className="flex items-center space-x-2">
+                <div className="w-2 h-2 bg-blue-400 rounded-full animate-pulse"></div>
+                <span className="text-sm font-medium text-white">
+                  Circle Gas Station
+                </span>
+              </div>
+              <button
+                onClick={() => setGasless(!gasless)}
+                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                  gasless ? "bg-blue-600" : "bg-slate-600"
+                }`}
+                disabled={currentStep !== "selecting"}
+              >
+                <span
+                  className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                    gasless ? "translate-x-6" : "translate-x-1"
+                  }`}
+                />
+              </button>
+            </div>
+            <p className="text-xs text-slate-300">
+              {gasless
+                ? "✨ Gas fees sponsored by Circle - donate without paying gas!"
+                : "💸 Pay your own gas fees"}
+            </p>
+          </div>
+        )}
+
+        {/* Gas Savings Display */}
+        {wasGasSponsored && currentStep === "complete" && (
+          <div className="mb-4 p-3 bg-green-900/30 rounded-lg border border-green-500/30">
+            <div className="flex items-center space-x-2 mb-1">
+              <span className="text-green-400">💰</span>
+              <span className="text-sm font-medium text-green-300">
+                Gas Fees Saved!
+              </span>
+            </div>
+            <p className="text-xs text-green-200">
+              Circle Gas Station sponsored your transaction fees. More of your
+              donation goes directly to aid!
+            </p>
+          </div>
+        )}
 
         {/* Destination Info */}
         <div className="mb-6 p-3 bg-slate-700 rounded-lg">

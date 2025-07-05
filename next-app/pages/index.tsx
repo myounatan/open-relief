@@ -2,6 +2,7 @@ import { PrivyClient } from "@privy-io/server-auth";
 import { GetServerSideProps } from "next";
 import dynamic from "next/dynamic";
 import Head from "next/head";
+import AccountButton from "../components/AccountButton";
 import HeroSection from "../components/HeroSection";
 
 // Dynamically import OpenReliefGlobe to avoid SSR issues
@@ -22,21 +23,33 @@ export const getServerSideProps: GetServerSideProps = async ({ req }) => {
 
   const PRIVY_APP_ID = process.env.NEXT_PUBLIC_PRIVY_APP_ID;
   const PRIVY_APP_SECRET = process.env.PRIVY_APP_SECRET;
-  const client = new PrivyClient(PRIVY_APP_ID!, PRIVY_APP_SECRET!);
+
+  // Only verify if we have the required environment variables
+  if (!PRIVY_APP_ID || !PRIVY_APP_SECRET) {
+    console.warn("Missing Privy environment variables");
+    return { props: {} };
+  }
 
   try {
+    const client = new PrivyClient(PRIVY_APP_ID, PRIVY_APP_SECRET);
     const claims = await client.verifyAuthToken(cookieAuthToken);
-    console.log({ claims });
+    console.log("✅ Privy claims verified:", { userId: claims.userId });
 
-    // Instead of redirecting to dashboard, keep users on the main page
-    // They can navigate to dashboard via the globe interface
-    return { props: {} };
+    // Keep users on the main page - they can navigate via the globe interface
+    return { props: { authenticated: true, userId: claims.userId } };
   } catch (error) {
+    console.log("⚠️ Privy token verification failed:", error);
+    // Don't throw - just continue without server-side auth
     return { props: {} };
   }
 };
 
-export default function HomePage() {
+interface HomePageProps {
+  authenticated?: boolean;
+  userId?: string;
+}
+
+export default function HomePage({ authenticated, userId }: HomePageProps) {
   return (
     <>
       <Head>
@@ -51,6 +64,9 @@ export default function HomePage() {
         {/* Hero Section */}
         <HeroSection />
 
+        {/* Account Button - positioned over everything */}
+        <AccountButton />
+
         {/* Globe Component */}
         <OpenReliefGlobe />
 
@@ -63,7 +79,8 @@ export default function HomePage() {
               </p>
               <p className="text-xs text-slate-500 mb-3">
                 Powered by Circle's Cross-Chain Transfer Protocol (CCTP V2) for
-                instant USDC transfers
+                instant USDC transfers • Gas fees sponsored by Circle Gas
+                Station
               </p>
               <div className="flex justify-center space-x-4 text-xs text-slate-500">
                 <div className="flex items-center">
@@ -94,6 +111,13 @@ export default function HomePage() {
             </div>
           </div>
         </div>
+
+        {/* Debug info in development */}
+        {process.env.NODE_ENV === "development" && authenticated && (
+          <div className="absolute top-20 right-4 bg-green-900/50 text-green-300 px-2 py-1 rounded text-xs">
+            Server auth: ✓ {userId}
+          </div>
+        )}
       </main>
     </>
   );

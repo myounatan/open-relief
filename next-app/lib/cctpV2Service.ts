@@ -2,6 +2,7 @@ import axios from "axios";
 import {
   createWalletClient,
   custom,
+  encodeFunctionData,
   encodePacked,
   http,
   publicActions,
@@ -13,6 +14,7 @@ import {
   polygonAmoy,
   sepolia,
 } from "viem/chains";
+import { circleGasService } from "./circleGasService";
 
 // OpenRelief Donation Pool Contract on Base Sepolia
 export const DONATION_POOL_CONTRACT =
@@ -87,6 +89,7 @@ export interface CCTPTransferParams {
   amount: string;
   poolId: string;
   privyWallet: any;
+  gasless?: boolean;
 }
 
 // ABI definitions
@@ -198,10 +201,12 @@ export class CCTPV2Service {
     sourceChain,
     amount,
     privyWallet,
+    gasless = false,
   }: {
     sourceChain: SupportedChain;
     amount: string;
     privyWallet: any;
+    gasless?: boolean;
   }): Promise<string> {
     const maxAllowance = BigInt(10_000_000_000 * 1e6); // 10,000 USDC
 
@@ -218,6 +223,58 @@ export class CCTPV2Service {
       transport: custom(provider),
     });
 
+    if (
+      gasless &&
+      circleGasService.isGaslessSupported(CHAIN_CONFIG[sourceChain].chain.id)
+    ) {
+      console.log(
+        "🚀 Attempting gasless USDC approval via Circle Gas Station..."
+      );
+
+      try {
+        const { result, wasGasless } =
+          await circleGasService.makeTransactionGasless(
+            client,
+            {
+              to: CCTP_CONTRACTS[sourceChain].usdc,
+              data: encodeFunctionData({
+                abi: USDC_ABI,
+                functionName: "approve",
+                args: [
+                  CCTP_CONTRACTS[sourceChain].tokenMessenger as `0x${string}`,
+                  maxAllowance,
+                ],
+              }),
+            },
+            async () => {
+              return await client.writeContract({
+                address: CCTP_CONTRACTS[sourceChain].usdc as `0x${string}`,
+                abi: USDC_ABI,
+                functionName: "approve",
+                args: [
+                  CCTP_CONTRACTS[sourceChain].tokenMessenger as `0x${string}`,
+                  maxAllowance,
+                ],
+              });
+            }
+          );
+
+        if (wasGasless) {
+          console.log("✅ Gas fees sponsored by Circle Gas Station!");
+        } else {
+          console.log("⚡ Fallback to regular transaction");
+        }
+
+        return result;
+      } catch (error) {
+        console.error(
+          "Gasless approval failed, falling back to regular transaction:",
+          error
+        );
+      }
+    }
+
+    // Regular transaction (fallback or non-gasless)
     const approveTx = await client.writeContract({
       address: CCTP_CONTRACTS[sourceChain].usdc as `0x${string}`,
       abi: USDC_ABI,
@@ -236,6 +293,7 @@ export class CCTPV2Service {
     amount,
     poolId,
     privyWallet,
+    gasless = false,
   }: CCTPTransferParams): Promise<string> {
     const amountInUnits = BigInt(Math.floor(parseFloat(amount) * 1e6));
     const maxFee = BigInt(500); // 0.0005 USDC
@@ -261,18 +319,81 @@ export class CCTPV2Service {
       transport: custom(provider),
     });
 
+    if (
+      gasless &&
+      circleGasService.isGaslessSupported(CHAIN_CONFIG[sourceChain].chain.id)
+    ) {
+      console.log("🚀 Attempting gasless USDC burn via Circle Gas Station...");
+
+      try {
+        const { result, wasGasless } =
+          await circleGasService.makeTransactionGasless(
+            client,
+            {
+              to: CCTP_CONTRACTS[sourceChain].tokenMessenger,
+              data: encodeFunctionData({
+                abi: TOKEN_MESSENGER_V2_ABI,
+                functionName: "depositForBurnWithHook",
+                args: [
+                  amountInUnits,
+                  CCTP_CONTRACTS.baseSepolia.domain,
+                  recipientBytes32 as `0x${string}`,
+                  CCTP_CONTRACTS[sourceChain].usdc as `0x${string}`,
+                  destinationCallerBytes32 as `0x${string}`,
+                  maxFee,
+                  1000,
+                  hookData,
+                ],
+              }),
+            },
+            async () => {
+              return await client.writeContract({
+                address: CCTP_CONTRACTS[sourceChain]
+                  .tokenMessenger as `0x${string}`,
+                abi: TOKEN_MESSENGER_V2_ABI,
+                functionName: "depositForBurnWithHook",
+                args: [
+                  amountInUnits,
+                  CCTP_CONTRACTS.baseSepolia.domain,
+                  recipientBytes32 as `0x${string}`,
+                  CCTP_CONTRACTS[sourceChain].usdc as `0x${string}`,
+                  destinationCallerBytes32 as `0x${string}`,
+                  maxFee,
+                  1000,
+                  hookData,
+                ],
+              });
+            }
+          );
+
+        if (wasGasless) {
+          console.log("✅ Gas fees sponsored by Circle Gas Station!");
+        } else {
+          console.log("⚡ Fallback to regular transaction");
+        }
+
+        return result;
+      } catch (error) {
+        console.error(
+          "Gasless burn failed, falling back to regular transaction:",
+          error
+        );
+      }
+    }
+
+    // Regular transaction (fallback or non-gasless)
     const burnTx = await client.writeContract({
       address: CCTP_CONTRACTS[sourceChain].tokenMessenger as `0x${string}`,
       abi: TOKEN_MESSENGER_V2_ABI,
       functionName: "depositForBurnWithHook",
       args: [
         amountInUnits,
-        CCTP_CONTRACTS.baseSepolia.domain, // Always destination to Base Sepolia
+        CCTP_CONTRACTS.baseSepolia.domain,
         recipientBytes32 as `0x${string}`,
         CCTP_CONTRACTS[sourceChain].usdc as `0x${string}`,
         destinationCallerBytes32 as `0x${string}`,
         maxFee,
-        1000, // Fast Transfer threshold
+        1000,
         hookData,
       ],
     });
@@ -357,6 +478,10 @@ export class CCTPV2Service {
 
   getChainName(chain: SupportedChain): string {
     return CCTP_CONTRACTS[chain].name;
+  }
+
+  getChainId(chain: SupportedChain): number {
+    return CHAIN_CONFIG[chain].chain.id;
   }
 
   getSupportedChains(): SupportedChain[] {

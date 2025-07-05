@@ -148,7 +148,7 @@ const OpenReliefGlobe: React.FC = () => {
   useEffect(() => {
     if (globeRef.current) {
       // Set initial camera position
-      globeRef.current.pointOfView({ altitude: 2 });
+      globeRef.current.pointOfView({ altitude: 2.8 });
 
       // Auto-rotate the globe, but pause on hover
       globeRef.current.controls().autoRotate = !isHovered;
