@@ -4,7 +4,6 @@ import { SelfAppBuilder, SelfQRcodeWrapper } from "@selfxyz/qrcode";
 import React, { useEffect, useState } from "react";
 import { DisasterZoneFeature } from "../lib/countryData";
 import { shouldUseMobileFlow } from "../lib/deviceDetection";
-import { ethers } from "ethers";
 
 interface IdentityVerificationProps {
   isOpen: boolean;
@@ -48,34 +47,33 @@ const IdentityVerification: React.FC<IdentityVerificationProps> = ({
       console.log("🔍 User Identifier:", userIdentifier);
 
       try {
-        
         // Configure Self app with verification requirements
         const config = {
           appName: "OpenRelief",
           scope: "openrelief",
           endpointType: "staging_celo",
-          endpoint: `${process.env.NEXT_PUBLIC_IDENTITY_VERIFIER_ADDRESS}`.toLowerCase(),
+          endpoint:
+            `${process.env.NEXT_PUBLIC_IDENTITY_VERIFIER_ADDRESS}`.toLowerCase(),
           logoBase64: "https://i.postimg.cc/mrmVf9hm/self.png", // Could add your logo here
           userId: `${userIdentifier}`,
           userIdType: "hex", // Using blockchain address
           version: 2,
           userDefinedData: "Bonjour Cannes!",
-            disclosures: {
-    
+          disclosures: {
             // // what you want to verify from users' identity
-              // minimumAge: 0,
-              // ofac: false,
-              // excludedCountries: [countries.BELGIUM],
-    
+            // minimumAge: 0,
+            // ofac: false,
+            // excludedCountries: [countries.BELGIUM],
+
             // //what you want users to reveal
-              // name: false,
-              // issuing_state: true,
-              nationality: true,
-              // date_of_birth: true,
-              // passport_number: false,
-              gender: true,
-              // expiry_date: false,
-            }
+            // name: false,
+            // issuing_state: true,
+            nationality: true,
+            // date_of_birth: true,
+            // passport_number: false,
+            gender: true,
+            // expiry_date: false,
+          },
         };
 
         console.log("🔧 Self App Configuration:", {
@@ -100,12 +98,12 @@ const IdentityVerification: React.FC<IdentityVerificationProps> = ({
         //   userIdType: "hex", // use 'hex' for ethereum address or 'uuid' for uuidv4
         //   userDefinedData: "Bonjour Cannes!",
         //   disclosures: {
-  
+
         //   // // what you want to verify from users' identity
         //     minimumAge: 18,
         //     // ofac: false,
         //     // excludedCountries: [countries.BELGIUM],
-  
+
         //   // //what you want users to reveal
         //     // name: false,
         //     // issuing_state: true,
