@@ -5,7 +5,8 @@
     "generate-types": "hardhat compile && pnpm run copy-types",
     "copy-types": "mkdir -p ../next-app/types && cp -r typechain-types/* ../next-app/types/",
     "deploy:base-sepolia": "hardhat ignition deploy ignition/modules/ReliefPools.ts --network baseSepolia",
-    "deploy:celo-alfajores": "hardhat ignition deploy ignition/modules/IdentityVerifier.ts --network celoAlfajores"
+    "deploy:celo-alfajores": "hardhat ignition deploy ignition/modules/IdentityVerifier.ts --network celoAlfajores",
+    "hash": "node scripts/hash.js"
   },
   "devDependencies": {
     "@nomicfoundation/hardhat-toolbox": "^6.0.0",

@@ -30,7 +30,7 @@ export interface CircleAttestation {
 }
 
 // CCTP V2 Contract Addresses and Configuration (Testnet)
-const CCTP_CONTRACTS = {
+export const CCTP_CONTRACTS = {
   sepolia: {
     usdc: "0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238",
     tokenMessenger: "0x8FE6B999Dc680CcFDD5Bf7EB0974218be2542DAA",

@@ -9,7 +9,7 @@ const IdentityVerifierModule = buildModule("IdentityVerifierModule", (m) => {
   const scope = m.getParameter("scope", 0);
   
   // Generate a config ID (you may want to customize this)
-  const configId = m.getParameter("configId", "0x0000000000000000000000000000000000000000000000000000000000000001");
+  const configId = m.getParameter("configId", "0x7b6436b0c98f62380866d9432c2af0ee08ce16a171bda6951aecd95ee1307d61");
 
   // Deploy IdentityVerifier contract
   const identityVerifier = m.contract("IdentityVerifier", [

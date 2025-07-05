@@ -126,7 +126,6 @@ export interface ReliefPoolsInterface extends Interface {
       | "createReliefPool"
       | "donate"
       | "emergencyWithdraw"
-      | "generatePersonHash"
       | "getBeneficiary"
       | "getContractBalance"
       | "getDonor"
@@ -181,7 +180,7 @@ export interface ReliefPoolsInterface extends Interface {
   ): string;
   encodeFunctionData(
     functionFragment: "checkPersonClaimedFromPool",
-    values: [BigNumberish, BigNumberish, BigNumberish]
+    values: [BigNumberish, BigNumberish]
   ): string;
   encodeFunctionData(
     functionFragment: "claimRelief",
@@ -219,10 +218,6 @@ export interface ReliefPoolsInterface extends Interface {
     values: [BigNumberish]
   ): string;
   encodeFunctionData(
-    functionFragment: "generatePersonHash",
-    values: [BigNumberish, BigNumberish]
-  ): string;
-  encodeFunctionData(
     functionFragment: "getBeneficiary",
     values: [BigNumberish, AddressLike]
   ): string;
@@ -236,7 +231,7 @@ export interface ReliefPoolsInterface extends Interface {
   ): string;
   encodeFunctionData(
     functionFragment: "getPersonClaimedPools",
-    values: [BigNumberish, BigNumberish]
+    values: [BigNumberish]
   ): string;
   encodeFunctionData(
     functionFragment: "getReliefPool",
@@ -256,12 +251,12 @@ export interface ReliefPoolsInterface extends Interface {
   ): string;
   encodeFunctionData(
     functionFragment: "hasPersonClaimedFromPool",
-    values: [BigNumberish, BytesLike]
+    values: [BigNumberish, BigNumberish]
   ): string;
   encodeFunctionData(functionFragment: "owner", values?: undefined): string;
   encodeFunctionData(
     functionFragment: "personClaimedPools",
-    values: [BytesLike, BigNumberish]
+    values: [BigNumberish, BigNumberish]
   ): string;
   encodeFunctionData(
     functionFragment: "poolBeneficiaries",
@@ -347,10 +342,6 @@ export interface ReliefPoolsInterface extends Interface {
   decodeFunctionResult(functionFragment: "donate", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "emergencyWithdraw",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "generatePersonHash",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -607,11 +598,7 @@ export interface ReliefPools extends BaseContract {
   cctpMessageTransmitter: TypedContractMethod<[], [string], "view">;
 
   checkPersonClaimedFromPool: TypedContractMethod<
-    [
-      poolId: BigNumberish,
-      nullifier: BigNumberish,
-      userIdentifier: BigNumberish
-    ],
+    [poolId: BigNumberish, userIdentifier: BigNumberish],
     [boolean],
     "view"
   >;
@@ -666,12 +653,6 @@ export interface ReliefPools extends BaseContract {
     "nonpayable"
   >;
 
-  generatePersonHash: TypedContractMethod<
-    [nullifier: BigNumberish, userIdentifier: BigNumberish],
-    [string],
-    "view"
-  >;
-
   getBeneficiary: TypedContractMethod<
     [poolId: BigNumberish, beneficiary: AddressLike],
     [ReliefPools.BeneficiaryStructOutput],
@@ -687,7 +668,7 @@ export interface ReliefPools extends BaseContract {
   >;
 
   getPersonClaimedPools: TypedContractMethod<
-    [nullifier: BigNumberish, userIdentifier: BigNumberish],
+    [userIdentifier: BigNumberish],
     [bigint[]],
     "view"
   >;
@@ -723,7 +704,7 @@ export interface ReliefPools extends BaseContract {
   >;
 
   hasPersonClaimedFromPool: TypedContractMethod<
-    [arg0: BigNumberish, arg1: BytesLike],
+    [arg0: BigNumberish, arg1: BigNumberish],
     [boolean],
     "view"
   >;
@@ -731,7 +712,7 @@ export interface ReliefPools extends BaseContract {
   owner: TypedContractMethod<[], [string], "view">;
 
   personClaimedPools: TypedContractMethod<
-    [arg0: BytesLike, arg1: BigNumberish],
+    [arg0: BigNumberish, arg1: BigNumberish],
     [bigint],
     "view"
   >;
@@ -859,11 +840,7 @@ export interface ReliefPools extends BaseContract {
   getFunction(
     nameOrSignature: "checkPersonClaimedFromPool"
   ): TypedContractMethod<
-    [
-      poolId: BigNumberish,
-      nullifier: BigNumberish,
-      userIdentifier: BigNumberish
-    ],
+    [poolId: BigNumberish, userIdentifier: BigNumberish],
     [boolean],
     "view"
   >;
@@ -919,13 +896,6 @@ export interface ReliefPools extends BaseContract {
     nameOrSignature: "emergencyWithdraw"
   ): TypedContractMethod<[amount: BigNumberish], [void], "nonpayable">;
   getFunction(
-    nameOrSignature: "generatePersonHash"
-  ): TypedContractMethod<
-    [nullifier: BigNumberish, userIdentifier: BigNumberish],
-    [string],
-    "view"
-  >;
-  getFunction(
     nameOrSignature: "getBeneficiary"
   ): TypedContractMethod<
     [poolId: BigNumberish, beneficiary: AddressLike],
@@ -944,11 +914,7 @@ export interface ReliefPools extends BaseContract {
   >;
   getFunction(
     nameOrSignature: "getPersonClaimedPools"
-  ): TypedContractMethod<
-    [nullifier: BigNumberish, userIdentifier: BigNumberish],
-    [bigint[]],
-    "view"
-  >;
+  ): TypedContractMethod<[userIdentifier: BigNumberish], [bigint[]], "view">;
   getFunction(
     nameOrSignature: "getReliefPool"
   ): TypedContractMethod<
@@ -986,7 +952,7 @@ export interface ReliefPools extends BaseContract {
   getFunction(
     nameOrSignature: "hasPersonClaimedFromPool"
   ): TypedContractMethod<
-    [arg0: BigNumberish, arg1: BytesLike],
+    [arg0: BigNumberish, arg1: BigNumberish],
     [boolean],
     "view"
   >;
@@ -996,7 +962,7 @@ export interface ReliefPools extends BaseContract {
   getFunction(
     nameOrSignature: "personClaimedPools"
   ): TypedContractMethod<
-    [arg0: BytesLike, arg1: BigNumberish],
+    [arg0: BigNumberish, arg1: BigNumberish],
     [bigint],
     "view"
   >;
