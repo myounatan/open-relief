@@ -1,14 +1,10 @@
 import type { NextApiRequest, NextApiResponse } from "next";
-import { createWalletClient, http, decodeEventLog, decodeAbiParameters } from "viem";
+import { createWalletClient, http, decodeEventLog, keccak256, toHex } from "viem";
 import { baseSepolia } from "viem/chains";
 import { privateKeyToAccount } from "viem/accounts";
 
-// Function to decode pool ID from hex to readable string
-function decodePoolId(hexString: string): string {
-    const cleanHex = hexString.startsWith('0x') ? hexString.slice(2) : hexString;
-    const buffer = Buffer.from(cleanHex, 'hex');
-    return buffer.toString('utf8').replace(/\0+$/, '');
-}
+// Note: The reliefPoolId in the UserVerified event is already a decoded string,
+// so no hex-to-string conversion is needed in this webhook.
 
 // UserVerified event ABI for decoding
 const USER_VERIFIED_ABI = [
@@ -154,8 +150,9 @@ export default async function handler(
     }
 
     // Find UserVerified event in the logs
+    const userVerifiedEventSignature = keccak256(toHex('UserVerified(uint256,uint256,string,address,string,uint256)'));
     const userVerifiedLog = activity.log?.find((log: any) => 
-      log.topics && log.topics[0] === '0x' + 'UserVerified(uint256,uint256,string,address,string,uint256)' // This needs to be the actual event signature hash
+      log.topics && log.topics[0] === userVerifiedEventSignature
     );
 
     if (!userVerifiedLog) {
