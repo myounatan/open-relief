@@ -1,0 +1,24 @@
+{
+  "_format": "hh-sol-artifact-1",
+  "contractName": "MockIdentityVerificationHub",
+  "sourceName": "contracts/MockIdentityVerificationHub.sol",
+  "abi": [
+    {
+      "inputs": [],
+      "name": "mockFunction",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "pure",
+      "type": "function"
+    }
+  ],
+  "bytecode": "0x6080604052348015600f57600080fd5b50607780601d6000396000f3fe6080604052348015600f57600080fd5b506004361060285760003560e01c80633e6fec0414602d575b600080fd5b604080516001815290519081900360200190f3fea26469706673582212205a58093e927da303ba13a0643337170a8c05015eb801d3ff6cac22073d32474764736f6c634300081c0033",
+  "deployedBytecode": "0x6080604052348015600f57600080fd5b506004361060285760003560e01c80633e6fec0414602d575b600080fd5b604080516001815290519081900360200190f3fea26469706673582212205a58093e927da303ba13a0643337170a8c05015eb801d3ff6cac22073d32474764736f6c634300081c0033",
+  "linkReferences": {},
+  "deployedLinkReferences": {}
+}
