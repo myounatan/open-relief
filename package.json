@@ -1,0 +1,22 @@
+{
+  "name": "open-relief",
+  "private": true,
+  "scripts": {
+    "dev": "pnpm --filter next-app dev",
+    "build": "pnpm --filter hardhat-project generate-types && pnpm --filter next-app build",
+    "generate-types": "pnpm --filter hardhat-project generate-types",
+    "compile": "pnpm --filter hardhat-project compile",
+    "deploy:base-sepolia": "pnpm --filter hardhat-project deploy:base-sepolia",
+    "deploy:celo-alfajores": "pnpm --filter hardhat-project deploy:celo-alfajores",
+    "install-all": "pnpm install && pnpm --filter hardhat-project install && pnpm --filter next-app install"
+  },
+  "devDependencies": {
+    "@types/node": "^18.0.0",
+    "typescript": "^5.1.6"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "pnpm": ">=8.0.0"
+  },
+  "packageManager": "pnpm@8.0.0"
+} 

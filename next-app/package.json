@@ -9,7 +9,8 @@
     "build": "next build",
     "start": "next start",
     "format": "npx prettier --write \"{__tests__,components,pages,styles}/**/*.{ts,tsx,js,jsx}\"",
-    "lint": "next lint && npx prettier --check \"{__tests__,components,pages,styles}/**/*.{ts,tsx,js,jsx}\" && npx tsc --noEmit"
+    "lint": "next lint && npx prettier --check \"{__tests__,components,pages,styles}/**/*.{ts,tsx,js,jsx}\" && npx tsc --noEmit",
+    "generate-types": "cd ../hardhat && pnpm run generate-types"
   },
   "dependencies": {
     "@headlessui/react": "^1.7.3",
@@ -18,6 +19,7 @@
     "@privy-io/server-auth": "1.21.2",
     "@tailwindcss/forms": "^0.5.3",
     "axios": "^1.9.0",
+    "ethers": "^6.15.0",
     "next": "latest",
     "react": "18.2.0",
     "react-dom": "18.2.0",

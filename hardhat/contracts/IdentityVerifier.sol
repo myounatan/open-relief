@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: UNLICENSED
-pragma solidity ^0.8.28;
+pragma solidity 0.8.28;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
@@ -14,6 +14,7 @@ contract IdentityVerifier is SelfVerificationRoot, Ownable {
     
     address public adminAddress;
     bytes32 public immutable configId;
+    uint256 private storedScope;
     
     // Maps nullifiers to user identifiers for verification tracking
     mapping(uint256 => uint256) internal _nullifierToUserIdentifier;
@@ -28,15 +29,7 @@ contract IdentityVerifier is SelfVerificationRoot, Ownable {
     mapping(address => bytes) public adminSignatures;
     
     // Domain separator for EIP-712 signatures (for Base chain)
-    bytes32 public constant DOMAIN_SEPARATOR = keccak256(
-        abi.encode(
-            keccak256("EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)"),
-            keccak256(bytes("IdentityVerifier")),
-            keccak256(bytes("1")),
-            84532, // Base sepolia chain ID - signatures will be used on Base
-            address(this)
-        )
-    );
+    bytes32 public immutable DOMAIN_SEPARATOR;
     
     // TypeHash for verification message
     bytes32 public constant VERIFICATION_MESSAGE_TYPEHASH = keccak256(
@@ -85,15 +78,27 @@ contract IdentityVerifier is SelfVerificationRoot, Ownable {
     {
         adminAddress = _adminAddress;
         configId = _configId;
+        storedScope = _scope;
+        
+        // Initialize DOMAIN_SEPARATOR
+        DOMAIN_SEPARATOR = keccak256(
+            abi.encode(
+                keccak256("EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)"),
+                keccak256(bytes("IdentityVerifier")),
+                keccak256(bytes("1")),
+                84532, // Base sepolia chain ID - signatures will be used on Base
+                address(this)
+            )
+        );
     }
     
     /**
      * @dev Required: Override to provide configId for verification
      */
     function getConfigId(
-        bytes32 destinationChainId,
-        bytes32 userIdentifier, 
-        bytes memory userDefinedData
+        bytes32 /* destinationChainId */,
+        bytes32 /* userIdentifier */, 
+        bytes memory /* userDefinedData */
     ) public view override returns (bytes32) {
         return configId;
     }
@@ -103,7 +108,7 @@ contract IdentityVerifier is SelfVerificationRoot, Ownable {
      */
     function customVerificationHook(
         ISelfVerificationRoot.GenericDiscloseOutputV2 memory output,
-        bytes memory userData
+        bytes memory /* userData */
     ) internal override {
         // Validation checks (similar to airdrop example)
         if (output.userIdentifier == 0) revert InvalidUserIdentifier();
@@ -202,7 +207,7 @@ contract IdentityVerifier is SelfVerificationRoot, Ownable {
         uint256 userIdentifier,
         string memory nationality,
         uint256 timestamp
-    ) external pure returns (bytes32) {
+    ) external view returns (bytes32) {
         bytes32 structHash = keccak256(
             abi.encode(
                 VERIFICATION_MESSAGE_TYPEHASH,
@@ -274,6 +279,16 @@ contract IdentityVerifier is SelfVerificationRoot, Ownable {
      * @dev Get the current scope
      */
     function getScope() external view returns (uint256) {
-        return scope;
+        return getScopeFromParent();
+    }
+    
+    /**
+     * @dev Internal function to get scope from parent contract
+     */
+    function getScopeFromParent() internal view returns (uint256) {
+        // Access the scope from the parent contract
+        // We need to use assembly or a different approach since scope is private
+        // For now, let's store it in the constructor
+        return storedScope;
     }
 }

@@ -1,11 +1,20 @@
 {
   "name": "hardhat-project",
+  "scripts": {
+    "compile": "hardhat compile",
+    "generate-types": "hardhat compile && pnpm run copy-types",
+    "copy-types": "mkdir -p ../next-app/types && cp -r typechain-types/* ../next-app/types/",
+    "deploy:base-sepolia": "hardhat ignition deploy ignition/modules/ReliefPools.ts --network baseSepolia",
+    "deploy:celo-alfajores": "hardhat ignition deploy ignition/modules/IdentityVerifier.ts --network celoAlfajores"
+  },
   "devDependencies": {
     "@nomicfoundation/hardhat-toolbox": "^6.0.0",
     "hardhat": "^2.25.0"
   },
   "dependencies": {
+    "@openzeppelin/contracts": "^5.0.0",
+    "@openzeppelin/contracts-0.7": "npm:@openzeppelin/contracts@3.4.2",
     "@selfxyz/contracts": "^1.2.0",
-    "@openzeppelin/contracts": "^5.0.0"
+    "dotenv": "^17.0.1"
   }
 }
