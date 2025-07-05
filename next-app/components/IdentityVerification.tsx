@@ -189,7 +189,7 @@ const IdentityVerification: React.FC<IdentityVerificationProps> = ({
                 </button>
 
                 <p className="text-xs text-slate-500 mt-3">
-                  Don't have the Self app? Download it from your app store.
+                  Don&apos;t have the Self app? Download it from your app store.
                 </p>
               </div>
             ) : (
@@ -233,7 +233,7 @@ const IdentityVerification: React.FC<IdentityVerificationProps> = ({
 
             <div className="mt-6 p-3 bg-slate-700 rounded-lg">
               <div className="text-sm text-slate-300 mb-2">
-                <strong>What we'll verify:</strong>
+                <strong>What we&apos;ll verify:</strong>
               </div>
               <ul className="text-xs text-slate-400 space-y-1">
                 <li>• Your name and nationality</li>

@@ -1,6 +1,7 @@
+import NumberFlow from "@number-flow/react";
 import { useLogin, useWallets } from "@privy-io/react-auth";
-import { useRouter } from "next/router";
-import React, { useEffect, useRef, useState } from "react";
+import Image from "next/image";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import Globe from "react-globe.gl";
 import {
   DISASTER_ZONES,
@@ -215,9 +216,11 @@ const OpenReliefGlobe: React.FC = () => {
     useState<DisasterZoneFeature | null>(null);
   const [dimensions, setDimensions] = useState({ width: 800, height: 600 });
   const [isHovered, setIsHovered] = useState(false);
+  const [zoneMetrics, setZoneMetrics] = useState<
+    Record<string, { donated: number; claimed: number; donors: number }>
+  >({});
   const { login } = useLogin();
   const { wallets } = useWallets();
-  const router = useRouter();
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -258,13 +261,147 @@ const OpenReliefGlobe: React.FC = () => {
 
   // Cleanup all timers on component unmount
   useEffect(() => {
+    const timers = arcCleanupTimers.current;
     return () => {
-      arcCleanupTimers.current.forEach((timer) => {
+      timers.forEach((timer) => {
         clearTimeout(timer);
       });
-      arcCleanupTimers.current.clear();
+      timers.clear();
     };
   }, []);
+
+  // Initialize zone metrics
+  useEffect(() => {
+    const initialMetrics: Record<
+      string,
+      { donated: number; claimed: number; donors: number }
+    > = {};
+    DISASTER_ZONES.forEach((zone) => {
+      initialMetrics[zone.properties.name] = {
+        donated: Math.floor(Math.random() * 500000) + 50000, // $50K-$550K
+        claimed: Math.floor(Math.random() * 300000) + 20000, // $20K-$320K
+        donors: Math.floor(Math.random() * 2000) + 100, // 100-2100 donors
+      };
+    });
+    setZoneMetrics(initialMetrics);
+  }, []);
+
+  // Function to remove an arc after animation completes
+  const removeArc = (arcId: string) => {
+    setArcsData((prev) => prev.filter((arc) => arc.id !== arcId));
+    setArcIds((prev) => {
+      const newSet = new Set(prev);
+      newSet.delete(arcId);
+      return newSet;
+    });
+
+    // Clean up timers
+    const cleanupTimer = arcCleanupTimers.current.get(arcId);
+    if (cleanupTimer) {
+      clearTimeout(cleanupTimer);
+      arcCleanupTimers.current.delete(arcId);
+    }
+  };
+
+  // Function to simulate a donation arc
+  const simulateDonation = useCallback(
+    (
+      startLat?: number,
+      startLng?: number,
+      targetZone?: DisasterZoneFeature
+    ) => {
+      const newArc = generateDonationArc(startLat, startLng, targetZone);
+
+      // Check if this arc already exists (prevent duplicates)
+      if (!arcIds.has(newArc.id)) {
+        setArcsData((prev) => [...prev, newArc]);
+        setArcIds((prev) => new Set([...prev, newArc.id]));
+
+        // Create start ring (green) - appears immediately
+        const startRing: RingData = {
+          id: `start-${newArc.id}`,
+          lat: newArc.startLat,
+          lng: newArc.startLng,
+          color: "green",
+        };
+        setRingsData((prev) => [...prev, startRing]);
+
+        // Remove start ring after arc dash length duration
+        const startRingDuration = newArc.duration * newArc.dashLength; // 40% of flight time
+        setTimeout(() => {
+          setRingsData((prev) => prev.filter((r) => r.id !== startRing.id));
+        }, startRingDuration);
+
+        // Create target ring (red) - appears when arc arrives
+        setTimeout(() => {
+          const targetRing: RingData = {
+            id: `target-${newArc.id}`,
+            lat: newArc.endLat,
+            lng: newArc.endLng,
+            color: "red",
+          };
+          setRingsData((prev) => [...prev, targetRing]);
+
+          // Remove target ring after same duration
+          setTimeout(() => {
+            setRingsData((prev) => prev.filter((r) => r.id !== targetRing.id));
+          }, startRingDuration);
+        }, newArc.duration); // When arc arrives
+
+        // Set up cleanup timer to remove arc after animation completes
+        const cleanupTimer = setTimeout(() => {
+          removeArc(newArc.id);
+        }, newArc.duration * 2); // Remove after 2x flight time like example
+
+        arcCleanupTimers.current.set(newArc.id, cleanupTimer);
+      }
+    },
+    [arcIds]
+  );
+
+  // Auto-generate donations every few seconds
+  useEffect(() => {
+    const interval = setInterval(
+      () => {
+        // Generate 1-5 random donations
+        const numDonations = Math.floor(Math.random() * 5) + 1;
+
+        for (let i = 0; i < numDonations; i++) {
+          // Small delay between each donation for visual effect
+          setTimeout(() => {
+            simulateDonation();
+
+            // Update random zone metrics
+            if (Object.keys(zoneMetrics).length > 0) {
+              const zoneNames = Object.keys(zoneMetrics);
+              const zoneName =
+                zoneNames[Math.floor(Math.random() * zoneNames.length)];
+              const donationAmount = Math.floor(Math.random() * 5000) + 100;
+
+              if (zoneName && zoneMetrics[zoneName]) {
+                setZoneMetrics((prev) => {
+                  const currentZone = prev[zoneName];
+                  if (!currentZone) return prev;
+
+                  return {
+                    ...prev,
+                    [zoneName]: {
+                      donated: currentZone.donated + donationAmount,
+                      claimed: currentZone.claimed,
+                      donors: currentZone.donors + 1,
+                    },
+                  };
+                });
+              }
+            }
+          }, i * 200);
+        }
+      },
+      3000 + Math.random() * 2000
+    ); // Every 3-5 seconds randomly
+
+    return () => clearInterval(interval);
+  }, [zoneMetrics, simulateDonation]);
 
   const handlePolygonClick = (polygon: any, event: any) => {
     if (polygon && event) {
@@ -319,76 +456,6 @@ const OpenReliefGlobe: React.FC = () => {
     // Future: handle claim modal based on query parameters
   };
 
-  // Function to remove an arc after animation completes
-  const removeArc = (arcId: string) => {
-    setArcsData((prev) => prev.filter((arc) => arc.id !== arcId));
-    setArcIds((prev) => {
-      const newSet = new Set(prev);
-      newSet.delete(arcId);
-      return newSet;
-    });
-
-    // Clean up timers
-    const cleanupTimer = arcCleanupTimers.current.get(arcId);
-    if (cleanupTimer) {
-      clearTimeout(cleanupTimer);
-      arcCleanupTimers.current.delete(arcId);
-    }
-  };
-
-  // Function to simulate a donation arc
-  const simulateDonation = (
-    startLat?: number,
-    startLng?: number,
-    targetZone?: DisasterZoneFeature
-  ) => {
-    const newArc = generateDonationArc(startLat, startLng, targetZone);
-
-    // Check if this arc already exists (prevent duplicates)
-    if (!arcIds.has(newArc.id)) {
-      setArcsData((prev) => [...prev, newArc]);
-      setArcIds((prev) => new Set([...prev, newArc.id]));
-
-      // Create start ring (green) - appears immediately
-      const startRing: RingData = {
-        id: `start-${newArc.id}`,
-        lat: newArc.startLat,
-        lng: newArc.startLng,
-        color: "green",
-      };
-      setRingsData((prev) => [...prev, startRing]);
-
-      // Remove start ring after arc dash length duration
-      const startRingDuration = newArc.duration * newArc.dashLength; // 40% of flight time
-      setTimeout(() => {
-        setRingsData((prev) => prev.filter((r) => r.id !== startRing.id));
-      }, startRingDuration);
-
-      // Create target ring (red) - appears when arc arrives
-      setTimeout(() => {
-        const targetRing: RingData = {
-          id: `target-${newArc.id}`,
-          lat: newArc.endLat,
-          lng: newArc.endLng,
-          color: "red",
-        };
-        setRingsData((prev) => [...prev, targetRing]);
-
-        // Remove target ring after same duration
-        setTimeout(() => {
-          setRingsData((prev) => prev.filter((r) => r.id !== targetRing.id));
-        }, startRingDuration);
-      }, newArc.duration); // When arc arrives
-
-      // Set up cleanup timer to remove arc after animation completes
-      const cleanupTimer = setTimeout(() => {
-        removeArc(newArc.id);
-      }, newArc.duration * 2); // Remove after 2x flight time like example
-
-      arcCleanupTimers.current.set(newArc.id, cleanupTimer);
-    }
-  };
-
   const closePopup = () => {
     setPopup(null);
     setCurrentHoveredZone(null);
@@ -409,24 +476,36 @@ const OpenReliefGlobe: React.FC = () => {
         setIsHovered(false);
         // Clear donation history arcs when leaving the globe area entirely
         if (!popup) {
-          console.log("Mouse left globe area, clearing donation history");
           setCurrentHoveredZone(null);
           setDonationHistoryArcs([]);
           setHoveredDonationId(null);
         }
       }}
     >
-      {/* Simulate Donation Button */}
-      <button
-        onClick={() => simulateDonation()}
-        className="absolute top-4 left-4 z-50 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors shadow-lg"
-      >
-        Simulate Donation {arcsData.length > 0 && `(${arcsData.length} active)`}
-      </button>
+      {/* Top Centered Section */}
+      <div className="absolute top-0 left-0 right-0 z-10 flex justify-center pt-9">
+        <div className="bg-slate-900/80 backdrop-blur-sm rounded-2xl px-12 py-6 border border-slate-600">
+          <div className="flex items-center space-x-6">
+            <Image
+              src="/logo.png"
+              alt="Open Relief"
+              width={60}
+              height={60}
+              className="w-15 h-15"
+            />
+            <div>
+              <h1 className="text-3xl font-bold text-white">Open Relief</h1>
+              <p className="text-base text-slate-300">
+                Live disaster relief donations worldwide
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
 
       <Globe
         ref={globeRef}
-        globeImageUrl="//unpkg.com/three-globe/example/img/earth-dark.jpg"
+        globeImageUrl="//unpkg.com/three-globe/example/img/earth-night.jpg"
         bumpImageUrl="//unpkg.com/three-globe/example/img/earth-topology.png"
         backgroundColor="rgba(0,0,0,1)"
         backgroundImageUrl={null}
@@ -458,30 +537,37 @@ const OpenReliefGlobe: React.FC = () => {
         }}
         polygonStrokeColor={() => "rgba(255, 255, 255, 0.4)"}
         polygonAltitude={(d: any) => d.properties?.altitude || 0.03}
-        polygonLabel={(d: any) => `
-          <div style="
-            background: rgba(30, 41, 59, 0.95);
-            color: white;
-            padding: 12px;
-            border-radius: 8px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
-            border: 1px solid rgba(71, 85, 105, 0.5);
-            font-family: sans-serif;
-            max-width: 200px;
-          ">
-            <div style="font-weight: 600; color: #fb923c; margin-bottom: 6px;">
-              ${d.properties?.name || "Unknown"}
+        polygonLabel={(d: any) => {
+          const zoneName = d.properties?.name || "Unknown";
+
+          return `
+            <div style="
+              background: rgba(30, 41, 59, 0.95);
+              color: white;
+              padding: 12px;
+              border-radius: 8px;
+              box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+              border: 1px solid rgba(71, 85, 105, 0.5);
+              font-family: sans-serif;
+              max-width: 250px;
+            ">
+              <div style="font-weight: 600; color: #fb923c; margin-bottom: 8px;">
+                ${zoneName}
+              </div>
+              <div style="font-size: 13px; color: #cbd5e1; margin-bottom: 8px;">
+                ${d.properties?.description || "No description"}
+              </div>
+              <div style="margin-bottom: 8px; font-size: 11px; color: #cbd5e1;">
+                Click to view more information, donate, or claim aid.
+              </div>
+              <div style="font-size: 11px; color: #ef4444;">
+                ${d.properties?.disasterType || "Unknown"} - ${
+                  d.properties?.severity || "Unknown"
+                } severity
+              </div>
             </div>
-            <div style="font-size: 13px; color: #cbd5e1; margin-bottom: 6px;">
-              ${d.properties?.description || "No description"}
-            </div>
-            <div style="font-size: 11px; color: #ef4444;">
-              ${d.properties?.disasterType || "Unknown"} - ${
-                d.properties?.severity || "Unknown"
-              } severity
-            </div>
-          </div>
-        `}
+          `;
+        }}
         onPolygonClick={handlePolygonClick}
         onPolygonHover={(polygon: any) => {
           if (globeRef.current) {
@@ -495,26 +581,15 @@ const OpenReliefGlobe: React.FC = () => {
             if (
               zone.properties?.name !== currentHoveredZone?.properties?.name
             ) {
-              console.log("Starting hover on new zone:", zone.properties?.name);
-
               // Clear previous zone's donation highlighting
               setHoveredDonationId(null);
 
               setCurrentHoveredZone(zone);
               const donationHistory = generateDonationHistory(zone);
-              console.log(
-                "Generated donation history:",
-                donationHistory.length,
-                "arcs for",
-                zone.properties?.name
-              );
               setDonationHistoryArcs(donationHistory);
             }
           } else if (!polygon && currentHoveredZone && !popup) {
             // Clear donation history arcs when hovering off polygon, unless popup is open
-            console.log(
-              "Clearing donation history arcs - no longer hovering and no popup"
-            );
             setCurrentHoveredZone(null);
             setDonationHistoryArcs([]);
             setHoveredDonationId(null);
@@ -539,39 +614,12 @@ const OpenReliefGlobe: React.FC = () => {
                     ]
                   : ["#a0a0a0", "#a0a0a0"], // Light gray (simulating transparency)
                 altitude: 0.2, // Lower altitude
-
                 startTime: 0,
-
                 dashLength: 1, // Long dash to appear more solid
               };
-              console.log("Created donation history arc:", {
-                id: arc.id,
-                startLat: arc.startLat,
-                startLng: arc.startLng,
-                endLat: arc.endLat,
-                endLng: arc.endLng,
-                color: arc.color,
-                altitude: arc.altitude,
-
-                dashLength: arc.dashLength,
-
-                from: donation.donorLocation,
-              });
               return arc;
             }),
           ];
-          console.log(
-            "=== FINAL ARCS DATA ===",
-            "Total arcs being rendered:",
-            combinedArcs.length,
-            "Regular arcs:",
-            arcsData.length,
-            "Donation history arcs:",
-            donationHistoryArcs.length
-          );
-          if (combinedArcs.length > 0) {
-            console.log("Full arcs array:", combinedArcs);
-          }
           return combinedArcs;
         })()}
         arcColor="color"
@@ -630,6 +678,35 @@ const OpenReliefGlobe: React.FC = () => {
               {popup.zone.properties.disasterType} -{" "}
               {popup.zone.properties.severity} severity
             </div>
+
+            {/* Zone Metrics */}
+            {(() => {
+              const currentMetrics = zoneMetrics[popup.zone.properties.name];
+              if (!currentMetrics) return null;
+
+              return (
+                <div className="grid grid-cols-3 gap-2 mb-4">
+                  <div className="bg-green-900/30 rounded p-2 text-center">
+                    <div className="text-xs text-green-400">Donated</div>
+                    <div className="text-sm font-bold text-green-300">
+                      $<NumberFlow value={currentMetrics.donated} />
+                    </div>
+                  </div>
+                  <div className="bg-blue-900/30 rounded p-2 text-center">
+                    <div className="text-xs text-blue-400">Claimed</div>
+                    <div className="text-sm font-bold text-blue-300">
+                      $<NumberFlow value={currentMetrics.claimed} />
+                    </div>
+                  </div>
+                  <div className="bg-orange-900/30 rounded p-2 text-center">
+                    <div className="text-xs text-orange-400">Donors</div>
+                    <div className="text-sm font-bold text-orange-300">
+                      <NumberFlow value={currentMetrics.donors} />
+                    </div>
+                  </div>
+                </div>
+              );
+            })()}
 
             {/* Recent Donations */}
             {donationHistoryArcs.length > 0 && (

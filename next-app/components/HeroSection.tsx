@@ -1,36 +1,74 @@
-import { useLogin, usePrivy } from "@privy-io/react-auth";
+import NumberFlow from "@number-flow/react";
+import { useEffect, useState } from "react";
 
 const HeroSection = () => {
-  const { login } = useLogin();
-  const { ready, authenticated } = usePrivy();
+  const [totalDonated, setTotalDonated] = useState(1247892);
+  const [totalClaimed, setTotalClaimed] = useState(956734);
 
-  // Don't render until Privy is ready
-  if (!ready) {
-    return null;
-  }
+  // Auto-increment counters to simulate live donations
+  useEffect(() => {
+    const interval = setInterval(
+      () => {
+        // Randomly increment donated amount every few seconds
+        setTotalDonated(
+          (prev) => prev + Math.floor(Math.random() * 5000) + 500
+        );
+
+        // Randomly increment claimed amount (slower than donated)
+        if (Math.random() > 0.6) {
+          setTotalClaimed(
+            (prev) => prev + Math.floor(Math.random() * 2000) + 200
+          );
+        }
+      },
+      2000 + Math.random() * 3000
+    ); // Every 2-5 seconds
+
+    return () => clearInterval(interval);
+  }, []);
 
   return (
-    <div className="absolute top-0 left-0 right-0 z-10 bg-gradient-to-b from-slate-900/80 to-transparent p-6">
-      <div className="max-w-7xl mx-auto">
-        <div className="text-center">
-          <h1 className="text-4xl md:text-6xl font-bold text-white mb-4">
-            OpenRelief
-          </h1>
-          <p className="text-xl md:text-2xl text-orange-400 mb-6">
-            Instant Verified Aid
-          </p>
-          <p className="text-lg text-slate-300 max-w-2xl mx-auto mb-8">
-            Connect donors directly with disaster zones through transparent,
-            verified aid distribution using cross-chain USDC transfers.
-          </p>
-          {!authenticated && (
-            <button
-              className="bg-orange-600 hover:bg-orange-700 py-3 px-8 text-white rounded-lg font-medium text-lg transition-colors shadow-lg"
-              onClick={login}
-            >
-              Connect Wallet
-            </button>
-          )}
+    <div className="absolute top-0 left-0 z-10 w-80 h-screen bg-gradient-to-r from-slate-900 via-slate-800 to-transparent backdrop-blur-sm">
+      <div className="p-8 h-full flex flex-col justify-center">
+        <div className="text-white space-y-8">
+          {/* Live Counters */}
+          <div className="space-y-6">
+            <div className="bg-slate-800/50 rounded-lg p-4 border border-slate-700">
+              <div className="text-sm text-slate-400 mb-1">Total Donated</div>
+              <div className="text-2xl font-bold text-green-400">
+                $
+                <NumberFlow value={totalDonated} />
+              </div>
+            </div>
+
+            <div className="bg-slate-800/50 rounded-lg p-4 border border-slate-700">
+              <div className="text-sm text-slate-400 mb-1">Total Claimed</div>
+              <div className="text-2xl font-bold text-blue-400">
+                $
+                <NumberFlow value={totalClaimed} />
+              </div>
+            </div>
+          </div>
+
+          {/* Project Description */}
+          <div className="bg-slate-800/30 rounded-lg p-4 border border-slate-700/50">
+            <h3 className="text-sm font-semibold text-orange-400 mb-2">
+              About Open Relief
+            </h3>
+            <p className="text-sm text-slate-300 leading-relaxed">
+              Revolutionizing disaster relief through blockchain transparency.
+              We connect global donors directly to verified disaster zones using
+              cross-chain USDC transfers, ensuring instant aid delivery with
+              zero intermediaries.
+            </p>
+          </div>
+
+          {/* Instructions */}
+          <div className="mt-6">
+            <p className="text-sm text-slate-400 italic">
+              Click on any disaster zone to donate or claim aid
+            </p>
+          </div>
         </div>
       </div>
     </div>

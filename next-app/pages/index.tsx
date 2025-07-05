@@ -71,18 +71,18 @@ export default function HomePage({ authenticated, userId }: HomePageProps) {
         <OpenReliefGlobe />
 
         {/* Bottom Info Overlay */}
-        <div className="absolute bottom-0 left-0 right-0 z-10 bg-gradient-to-t from-slate-900/80 to-transparent p-6">
+        <div className="absolute bottom-0 left-0 right-0 z-10 bg-gradient-to-t from-slate-900/90 to-transparent p-8">
           <div className="max-w-7xl mx-auto">
             <div className="text-center">
               <p className="text-sm text-slate-400 mb-2">
                 Click on highlighted disaster zones to donate or claim aid
               </p>
-              <p className="text-xs text-slate-500 mb-3">
+              <p className="text-sm text-slate-400 mb-3">
                 Powered by Circle&apos;s Cross-Chain Transfer Protocol (CCTP V2)
                 for instant USDC transfers • Gas fees sponsored by Circle Gas
                 Station
               </p>
-              <div className="flex justify-center space-x-4 text-xs text-slate-500">
+              <div className="flex justify-center space-x-4 text-sm text-slate-400">
                 <div className="flex items-center">
                   <div className="w-3 h-3 bg-red-600 rounded-full mr-1"></div>
                   War
