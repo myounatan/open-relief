@@ -1,0 +1,57 @@
+type DonationMade @entity(immutable: true) {
+  id: Bytes!
+  poolId: BigInt! # uint256
+  donor: Bytes! # address
+  sourceDomain: BigInt! # uint32
+  amount: BigInt! # uint256
+  timestamp: BigInt! # uint256
+  location: String! # string
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+}
+
+type FundsClaimed @entity(immutable: true) {
+  id: Bytes!
+  poolId: BigInt! # uint256
+  claimer: Bytes! # address
+  recipient: Bytes! # address
+  nullifier: BigInt! # uint256
+  userIdentifier: BigInt! # uint256
+  nationality: String! # string
+  amount: BigInt! # uint256
+  timestamp: BigInt! # uint256
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+}
+
+type OwnershipTransferred @entity(immutable: true) {
+  id: Bytes!
+  previousOwner: Bytes! # address
+  newOwner: Bytes! # address
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+}
+
+type PoolStatusChanged @entity(immutable: true) {
+  id: Bytes!
+  poolId: BigInt! # uint256
+  isActive: Boolean! # bool
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+}
+
+type ReliefPoolCreated @entity(immutable: true) {
+  id: Bytes!
+  poolId: BigInt! # uint256
+  disasterType: Int! # uint8
+  classification: Int! # uint8
+  nationalityRequired: String! # string
+  allocatedFundsPerPerson: BigInt! # uint256
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+}

@@ -1,0 +1,685 @@
+[
+  {
+    "inputs": [
+      { "internalType": "address", "name": "_adminAddress", "type": "address" },
+      { "internalType": "address", "name": "_usdcToken", "type": "address" },
+      {
+        "internalType": "address",
+        "name": "_cctpMessageTransmitter",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "nonpayable",
+    "type": "constructor"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "uint256",
+        "name": "poolId",
+        "type": "uint256"
+      },
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "donor",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint32",
+        "name": "sourceDomain",
+        "type": "uint32"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "amount",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "timestamp",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "string",
+        "name": "location",
+        "type": "string"
+      }
+    ],
+    "name": "DonationMade",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "uint256",
+        "name": "poolId",
+        "type": "uint256"
+      },
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "claimer",
+        "type": "address"
+      },
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "recipient",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "nullifier",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "userIdentifier",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "string",
+        "name": "nationality",
+        "type": "string"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "amount",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "timestamp",
+        "type": "uint256"
+      }
+    ],
+    "name": "FundsClaimed",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "previousOwner",
+        "type": "address"
+      },
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "newOwner",
+        "type": "address"
+      }
+    ],
+    "name": "OwnershipTransferred",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "uint256",
+        "name": "poolId",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "bool",
+        "name": "isActive",
+        "type": "bool"
+      }
+    ],
+    "name": "PoolStatusChanged",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "uint256",
+        "name": "poolId",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "enum ReliefPools.DisasterTypeEnum",
+        "name": "disasterType",
+        "type": "uint8"
+      },
+      {
+        "indexed": false,
+        "internalType": "enum ReliefPools.ClassificationEnum",
+        "name": "classification",
+        "type": "uint8"
+      },
+      {
+        "indexed": false,
+        "internalType": "string",
+        "name": "nationalityRequired",
+        "type": "string"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "allocatedFundsPerPerson",
+        "type": "uint256"
+      }
+    ],
+    "name": "ReliefPoolCreated",
+    "type": "event"
+  },
+  {
+    "inputs": [],
+    "name": "DOMAIN_SEPARATOR",
+    "outputs": [{ "internalType": "bytes32", "name": "", "type": "bytes32" }],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "VERIFICATION_MESSAGE_TYPEHASH",
+    "outputs": [{ "internalType": "bytes32", "name": "", "type": "bytes32" }],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      { "internalType": "uint32", "name": "sourceDomain", "type": "uint32" },
+      { "internalType": "bytes32", "name": "sender", "type": "bytes32" },
+      { "internalType": "bytes", "name": "messageBody", "type": "bytes" }
+    ],
+    "name": "_processCrossChainDonation",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "adminAddress",
+    "outputs": [{ "internalType": "address", "name": "", "type": "address" }],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "cctpMessageTransmitter",
+    "outputs": [{ "internalType": "address", "name": "", "type": "address" }],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      { "internalType": "uint256", "name": "poolId", "type": "uint256" },
+      { "internalType": "uint256", "name": "userIdentifier", "type": "uint256" }
+    ],
+    "name": "checkPersonClaimedFromPool",
+    "outputs": [{ "internalType": "bool", "name": "", "type": "bool" }],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      { "internalType": "uint256", "name": "poolId", "type": "uint256" },
+      { "internalType": "uint256", "name": "nullifier", "type": "uint256" },
+      {
+        "internalType": "uint256",
+        "name": "userIdentifier",
+        "type": "uint256"
+      },
+      { "internalType": "string", "name": "nationality", "type": "string" },
+      { "internalType": "uint256", "name": "timestamp", "type": "uint256" },
+      { "internalType": "address", "name": "recipient", "type": "address" },
+      { "internalType": "bytes", "name": "adminSignature", "type": "bytes" }
+    ],
+    "name": "claimRelief",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      { "internalType": "uint256", "name": "poolId", "type": "uint256" },
+      { "internalType": "uint256", "name": "nullifier", "type": "uint256" },
+      {
+        "internalType": "uint256",
+        "name": "userIdentifier",
+        "type": "uint256"
+      },
+      { "internalType": "string", "name": "nationality", "type": "string" },
+      { "internalType": "uint256", "name": "timestamp", "type": "uint256" },
+      { "internalType": "bytes", "name": "adminSignature", "type": "bytes" }
+    ],
+    "name": "claimReliefToSelf",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "enum ReliefPools.DisasterTypeEnum",
+        "name": "disasterType",
+        "type": "uint8"
+      },
+      {
+        "internalType": "enum ReliefPools.ClassificationEnum",
+        "name": "classification",
+        "type": "uint8"
+      },
+      {
+        "internalType": "string",
+        "name": "nationalityRequired",
+        "type": "string"
+      },
+      {
+        "internalType": "uint256",
+        "name": "allocatedFundsPerPerson",
+        "type": "uint256"
+      }
+    ],
+    "name": "createReliefPool",
+    "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      { "internalType": "uint256", "name": "poolId", "type": "uint256" },
+      { "internalType": "uint256", "name": "amount", "type": "uint256" },
+      { "internalType": "string", "name": "location", "type": "string" }
+    ],
+    "name": "donate",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      { "internalType": "uint256", "name": "amount", "type": "uint256" }
+    ],
+    "name": "emergencyWithdraw",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      { "internalType": "uint256", "name": "poolId", "type": "uint256" },
+      { "internalType": "address", "name": "beneficiary", "type": "address" }
+    ],
+    "name": "getBeneficiary",
+    "outputs": [
+      {
+        "components": [
+          { "internalType": "uint256", "name": "nullifier", "type": "uint256" },
+          {
+            "internalType": "uint256",
+            "name": "userIdentifier",
+            "type": "uint256"
+          },
+          {
+            "internalType": "address",
+            "name": "walletAddress",
+            "type": "address"
+          },
+          { "internalType": "uint256", "name": "amount", "type": "uint256" },
+          { "internalType": "uint256", "name": "timestamp", "type": "uint256" }
+        ],
+        "internalType": "struct ReliefPools.Beneficiary",
+        "name": "",
+        "type": "tuple"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "getContractBalance",
+    "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      { "internalType": "uint256", "name": "poolId", "type": "uint256" },
+      { "internalType": "address", "name": "donor", "type": "address" }
+    ],
+    "name": "getDonor",
+    "outputs": [
+      {
+        "components": [
+          { "internalType": "uint256", "name": "id", "type": "uint256" },
+          {
+            "internalType": "address",
+            "name": "walletAddress",
+            "type": "address"
+          },
+          { "internalType": "uint256", "name": "amount", "type": "uint256" },
+          { "internalType": "uint256", "name": "timestamp", "type": "uint256" },
+          { "internalType": "bool", "name": "isCrossChain", "type": "bool" },
+          {
+            "internalType": "uint32",
+            "name": "sourceDomain",
+            "type": "uint32"
+          },
+          { "internalType": "string", "name": "location", "type": "string" }
+        ],
+        "internalType": "struct ReliefPools.Donor",
+        "name": "",
+        "type": "tuple"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      { "internalType": "uint256", "name": "userIdentifier", "type": "uint256" }
+    ],
+    "name": "getPersonClaimedPools",
+    "outputs": [
+      { "internalType": "uint256[]", "name": "", "type": "uint256[]" }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      { "internalType": "uint256", "name": "poolId", "type": "uint256" }
+    ],
+    "name": "getReliefPool",
+    "outputs": [
+      {
+        "components": [
+          { "internalType": "uint256", "name": "id", "type": "uint256" },
+          {
+            "internalType": "enum ReliefPools.DisasterTypeEnum",
+            "name": "disasterType",
+            "type": "uint8"
+          },
+          {
+            "internalType": "enum ReliefPools.ClassificationEnum",
+            "name": "classification",
+            "type": "uint8"
+          },
+          {
+            "internalType": "string",
+            "name": "nationalityRequired",
+            "type": "string"
+          },
+          {
+            "internalType": "uint256",
+            "name": "allocatedFundsPerPerson",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "totalBeneficiaries",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "totalDonors",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "totalAmountClaimed",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "totalAmountDonated",
+            "type": "uint256"
+          },
+          { "internalType": "bool", "name": "isActive", "type": "bool" }
+        ],
+        "internalType": "struct ReliefPools.ReliefPool",
+        "name": "",
+        "type": "tuple"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "getTotalPools",
+    "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      { "internalType": "uint32", "name": "sourceDomain", "type": "uint32" },
+      { "internalType": "bytes32", "name": "sender", "type": "bytes32" },
+      {
+        "internalType": "uint32",
+        "name": "finalityThresholdExecuted",
+        "type": "uint32"
+      },
+      { "internalType": "bytes", "name": "messageBody", "type": "bytes" }
+    ],
+    "name": "handleReceiveFinalizedMessage",
+    "outputs": [{ "internalType": "bool", "name": "", "type": "bool" }],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      { "internalType": "uint32", "name": "sourceDomain", "type": "uint32" },
+      { "internalType": "bytes32", "name": "sender", "type": "bytes32" },
+      {
+        "internalType": "uint32",
+        "name": "finalityThresholdExecuted",
+        "type": "uint32"
+      },
+      { "internalType": "bytes", "name": "messageBody", "type": "bytes" }
+    ],
+    "name": "handleReceiveUnfinalizedMessage",
+    "outputs": [{ "internalType": "bool", "name": "", "type": "bool" }],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      { "internalType": "uint256", "name": "", "type": "uint256" },
+      { "internalType": "uint256", "name": "", "type": "uint256" }
+    ],
+    "name": "hasPersonClaimedFromPool",
+    "outputs": [{ "internalType": "bool", "name": "", "type": "bool" }],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "owner",
+    "outputs": [{ "internalType": "address", "name": "", "type": "address" }],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      { "internalType": "uint256", "name": "", "type": "uint256" },
+      { "internalType": "uint256", "name": "", "type": "uint256" }
+    ],
+    "name": "personClaimedPools",
+    "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      { "internalType": "uint256", "name": "", "type": "uint256" },
+      { "internalType": "address", "name": "", "type": "address" }
+    ],
+    "name": "poolBeneficiaries",
+    "outputs": [
+      { "internalType": "uint256", "name": "nullifier", "type": "uint256" },
+      {
+        "internalType": "uint256",
+        "name": "userIdentifier",
+        "type": "uint256"
+      },
+      { "internalType": "address", "name": "walletAddress", "type": "address" },
+      { "internalType": "uint256", "name": "amount", "type": "uint256" },
+      { "internalType": "uint256", "name": "timestamp", "type": "uint256" }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "poolCounter",
+    "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      { "internalType": "uint256", "name": "", "type": "uint256" },
+      { "internalType": "address", "name": "", "type": "address" }
+    ],
+    "name": "poolDonors",
+    "outputs": [
+      { "internalType": "uint256", "name": "id", "type": "uint256" },
+      { "internalType": "address", "name": "walletAddress", "type": "address" },
+      { "internalType": "uint256", "name": "amount", "type": "uint256" },
+      { "internalType": "uint256", "name": "timestamp", "type": "uint256" },
+      { "internalType": "bool", "name": "isCrossChain", "type": "bool" },
+      { "internalType": "uint32", "name": "sourceDomain", "type": "uint32" },
+      { "internalType": "string", "name": "location", "type": "string" }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
+    "name": "reliefPools",
+    "outputs": [
+      { "internalType": "uint256", "name": "id", "type": "uint256" },
+      {
+        "internalType": "enum ReliefPools.DisasterTypeEnum",
+        "name": "disasterType",
+        "type": "uint8"
+      },
+      {
+        "internalType": "enum ReliefPools.ClassificationEnum",
+        "name": "classification",
+        "type": "uint8"
+      },
+      {
+        "internalType": "string",
+        "name": "nationalityRequired",
+        "type": "string"
+      },
+      {
+        "internalType": "uint256",
+        "name": "allocatedFundsPerPerson",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "totalBeneficiaries",
+        "type": "uint256"
+      },
+      { "internalType": "uint256", "name": "totalDonors", "type": "uint256" },
+      {
+        "internalType": "uint256",
+        "name": "totalAmountClaimed",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "totalAmountDonated",
+        "type": "uint256"
+      },
+      { "internalType": "bool", "name": "isActive", "type": "bool" }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "renounceOwnership",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_cctpMessageTransmitter",
+        "type": "address"
+      }
+    ],
+    "name": "setCCTPMessageTransmitter",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      { "internalType": "uint256", "name": "poolId", "type": "uint256" }
+    ],
+    "name": "togglePoolStatus",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      { "internalType": "address", "name": "newOwner", "type": "address" }
+    ],
+    "name": "transferOwnership",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "usdcToken",
+    "outputs": [
+      { "internalType": "contract IERC20", "name": "", "type": "address" }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      { "internalType": "address", "name": "userAddress", "type": "address" },
+      { "internalType": "uint256", "name": "nullifier", "type": "uint256" },
+      {
+        "internalType": "uint256",
+        "name": "userIdentifier",
+        "type": "uint256"
+      },
+      { "internalType": "string", "name": "nationality", "type": "string" },
+      { "internalType": "uint256", "name": "timestamp", "type": "uint256" },
+      { "internalType": "bytes", "name": "adminSignature", "type": "bytes" }
+    ],
+    "name": "verifyAdminSignature",
+    "outputs": [{ "internalType": "bool", "name": "", "type": "bool" }],
+    "stateMutability": "view",
+    "type": "function"
+  }
+]
