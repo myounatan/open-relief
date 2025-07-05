@@ -18,7 +18,7 @@ import { circleGasService } from "./circleGasService";
 
 // OpenRelief Donation Pool Contract on Base Sepolia
 export const DONATION_POOL_CONTRACT =
-  process.env.NEXT_PUBLIC_DONATION_POOL_CONTRACT!;
+  process.env.NEXT_PUBLIC_POOL_CONTRACT_ADDRESS!; // Replace with actual contract address
 
 // Type definitions for Circle attestation
 export interface CircleAttestation {
