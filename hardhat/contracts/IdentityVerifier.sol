@@ -281,6 +281,13 @@ contract IdentityVerifier is SelfVerificationRoot, Ownable {
     function getScope() external view returns (uint256) {
         return getScopeFromParent();
     }
+
+    /**
+     * @dev Set the scope
+     */
+    function setScope(uint256 _scope) external onlyOwner {
+        storedScope = _scope;
+    }
     
     /**
      * @dev Internal function to get scope from parent contract
