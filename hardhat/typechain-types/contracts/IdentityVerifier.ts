@@ -66,6 +66,7 @@ export interface IdentityVerifierInterface extends Interface {
       | "owner"
       | "renounceOwnership"
       | "scope"
+      | "setScope"
       | "transferOwnership"
       | "verifiedUsers"
       | "verifyAdminSignature"
@@ -132,6 +133,10 @@ export interface IdentityVerifierInterface extends Interface {
     values?: undefined
   ): string;
   encodeFunctionData(functionFragment: "scope", values?: undefined): string;
+  encodeFunctionData(
+    functionFragment: "setScope",
+    values: [BigNumberish]
+  ): string;
   encodeFunctionData(
     functionFragment: "transferOwnership",
     values: [AddressLike]
@@ -208,6 +213,7 @@ export interface IdentityVerifierInterface extends Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "scope", data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: "setScope", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "transferOwnership",
     data: BytesLike
@@ -406,6 +412,8 @@ export interface IdentityVerifier extends BaseContract {
 
   scope: TypedContractMethod<[], [bigint], "view">;
 
+  setScope: TypedContractMethod<[_scope: BigNumberish], [void], "nonpayable">;
+
   transferOwnership: TypedContractMethod<
     [newOwner: AddressLike],
     [void],
@@ -519,6 +527,9 @@ export interface IdentityVerifier extends BaseContract {
   getFunction(
     nameOrSignature: "scope"
   ): TypedContractMethod<[], [bigint], "view">;
+  getFunction(
+    nameOrSignature: "setScope"
+  ): TypedContractMethod<[_scope: BigNumberish], [void], "nonpayable">;
   getFunction(
     nameOrSignature: "transferOwnership"
   ): TypedContractMethod<[newOwner: AddressLike], [void], "nonpayable">;
