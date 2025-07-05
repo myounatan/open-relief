@@ -10,16 +10,9 @@ import {
 import DonationModal from "./DonationModal";
 import IdentityVerification from "./IdentityVerification";
 
-// Sample donor locations and arcs
-const DONOR_LOCATIONS = [
-  { name: "New York", lat: 40.7128, lng: -74.006 },
-  { name: "London", lat: 51.5074, lng: -0.1278 },
-  { name: "Tokyo", lat: 35.6762, lng: 139.6503 },
-  { name: "Sydney", lat: -33.8688, lng: 151.2093 },
-];
-
-// Arc data type definition
+// Arc data type definition with unique ID
 interface ArcData {
+  id: string;
   startLat: number;
   startLng: number;
   endLat: number;
@@ -31,6 +24,29 @@ interface ArcData {
   duration: number;
   dashLength: number;
   dashGap: number;
+  dashInitialGap: number;
+}
+
+// Ring data type definition
+interface RingData {
+  id: string;
+  lat: number;
+  lng: number;
+  color: string;
+}
+
+// Donation history data type
+interface DonationHistoryData {
+  id: string;
+  startLat: number;
+  startLng: number;
+  endLat: number;
+  endLng: number;
+  amount: number;
+  currency: string;
+  timestamp: Date;
+  donorLocation: string;
+  isHighlighted: boolean;
 }
 
 // Calculate great circle distance between two points
@@ -61,39 +77,113 @@ const calculateArcAltitude = (distance: number): number => {
   return minAltitude + (maxAltitude - minAltitude) * normalizedDistance;
 };
 
-// Generate donor arcs to disaster zones
-const generateDonorArcs = (): ArcData[] => {
-  const arcs: ArcData[] = [];
+// Generate random coordinates within reasonable bounds
+const generateRandomLocation = () => {
+  // Generate random lat/lng with bias towards populated areas
+  const lat = (Math.random() - 0.5) * 140; // -70 to 70 degrees
+  const lng = (Math.random() - 0.5) * 360; // -180 to 180 degrees
+  return { lat, lng };
+};
 
-  DONOR_LOCATIONS.forEach((donor) => {
-    DISASTER_ZONES.forEach((zone) => {
-      const center = getPolygonCenter(zone);
-      const distance = calculateDistance(
-        donor.lat,
-        donor.lng,
-        center[1],
-        center[0]
-      );
+// Generate sample donation history for a disaster zone
+const generateDonationHistory = (
+  zone: DisasterZoneFeature
+): DonationHistoryData[] => {
+  const donations: DonationHistoryData[] = [];
+  const center = getPolygonCenter(zone);
 
-      const altitude = calculateArcAltitude(distance);
+  // Sample donor cities with names
+  const donorCities = [
+    { name: "New York", lat: 40.7128, lng: -74.006 },
+    { name: "London", lat: 51.5074, lng: -0.1278 },
+    { name: "Tokyo", lat: 35.6762, lng: 139.6503 },
+    { name: "Sydney", lat: -33.8688, lng: 151.2093 },
+    { name: "São Paulo", lat: -23.5505, lng: -46.6333 },
+    { name: "Dubai", lat: 25.2048, lng: 55.2708 },
+    { name: "Singapore", lat: 1.3521, lng: 103.8198 },
+  ];
 
-      arcs.push({
-        startLat: donor.lat,
-        startLng: donor.lng,
-        endLat: center[1],
-        endLng: center[0],
-        color: ["#22c55e", zone.properties.color],
-        altitude: altitude,
-        stroke: 0.8,
-        startTime: 0,
-        duration: 3000,
-        dashLength: 0.9,
-        dashGap: 0.8,
-      });
+  for (let i = 0; i < 5; i++) {
+    const cityIndex = Math.floor(Math.random() * donorCities.length);
+    const randomCity = donorCities[cityIndex]!; // Non-null assertion since array is populated
+    const amount = Math.floor(Math.random() * 5000) + 100; // $100-$5000
+    const currencies = ["USD", "EUR", "GBP", "JPY"];
+    const currencyIndex = Math.floor(Math.random() * currencies.length);
+    const currency = currencies[currencyIndex]!; // Non-null assertion since array is populated
+
+    // Generate timestamp within last 30 days
+    const daysAgo = Math.floor(Math.random() * 30);
+    const timestamp = new Date();
+    timestamp.setDate(timestamp.getDate() - daysAgo);
+
+    donations.push({
+      id: `donation-${zone.properties.name}-${i}`,
+      startLat: randomCity.lat,
+      startLng: randomCity.lng,
+      endLat: center[1],
+      endLng: center[0],
+      amount,
+      currency,
+      timestamp,
+      donorLocation: randomCity.name,
+      isHighlighted: false, // Keep for interface compatibility
     });
-  });
+  }
 
-  return arcs;
+  return donations;
+};
+
+// Generate a donation arc from random location to disaster zone
+const generateDonationArc = (
+  startLat?: number,
+  startLng?: number,
+  targetZone?: DisasterZoneFeature
+): ArcData => {
+  // Use provided coordinates or generate random ones
+  const start =
+    startLat !== undefined && startLng !== undefined
+      ? { lat: startLat, lng: startLng }
+      : generateRandomLocation();
+
+  // Use provided zone or pick random one
+  const zone =
+    targetZone ||
+    DISASTER_ZONES[Math.floor(Math.random() * DISASTER_ZONES.length)];
+
+  // Ensure we have a valid zone
+  if (!zone) {
+    throw new Error("No disaster zones available");
+  }
+
+  const center = getPolygonCenter(zone);
+
+  const distance = calculateDistance(
+    start.lat,
+    start.lng,
+    center[1],
+    center[0]
+  );
+
+  const altitude = calculateArcAltitude(distance);
+
+  // Create unique ID based on coordinates and timestamp
+  const id = `${start.lat.toFixed(4)}_${start.lng.toFixed(4)}_${center[1].toFixed(4)}_${center[0].toFixed(4)}_${Date.now()}`;
+
+  return {
+    id,
+    startLat: start.lat,
+    startLng: start.lng,
+    endLat: center[1],
+    endLng: center[0],
+    color: ["#22c55e", zone.properties.color],
+    altitude: altitude,
+    stroke: 0.8,
+    startTime: 0, // Start animation from the beginning
+    duration: 2000,
+    dashLength: 0.4, // Length of the traveling dash (40% of arc like example)
+    dashGap: 2, // Gap between dashes
+    dashInitialGap: 1, // Initial gap before dash starts (key for proper animation!)
+  };
 };
 
 interface PopupData {
@@ -104,6 +194,7 @@ interface PopupData {
 
 const OpenReliefGlobe: React.FC = () => {
   const globeRef = useRef<any>();
+  const arcCleanupTimers = useRef<Map<string, NodeJS.Timeout>>(new Map());
   const [popup, setPopup] = useState<PopupData | null>(null);
   const [donationModalOpen, setDonationModalOpen] = useState(false);
   const [identityVerificationOpen, setIdentityVerificationOpen] =
@@ -112,6 +203,16 @@ const OpenReliefGlobe: React.FC = () => {
     null
   );
   const [arcsData, setArcsData] = useState<ArcData[]>([]);
+  const [arcIds, setArcIds] = useState<Set<string>>(new Set());
+  const [ringsData, setRingsData] = useState<RingData[]>([]);
+  const [donationHistoryArcs, setDonationHistoryArcs] = useState<
+    DonationHistoryData[]
+  >([]);
+  const [hoveredDonationId, setHoveredDonationId] = useState<string | null>(
+    null
+  );
+  const [currentHoveredZone, setCurrentHoveredZone] =
+    useState<DisasterZoneFeature | null>(null);
   const [dimensions, setDimensions] = useState({ width: 800, height: 600 });
   const [isHovered, setIsHovered] = useState(false);
   const { login } = useLogin();
@@ -124,10 +225,6 @@ const OpenReliefGlobe: React.FC = () => {
         width: window.innerWidth,
         height: window.innerHeight,
       });
-
-      // Generate initial arcs
-      const initialArcs = generateDonorArcs();
-      setArcsData(initialArcs);
     }
   }, []);
 
@@ -159,13 +256,35 @@ const OpenReliefGlobe: React.FC = () => {
     }
   }, [isHovered]);
 
+  // Cleanup all timers on component unmount
+  useEffect(() => {
+    return () => {
+      arcCleanupTimers.current.forEach((timer) => {
+        clearTimeout(timer);
+      });
+      arcCleanupTimers.current.clear();
+    };
+  }, []);
+
   const handlePolygonClick = (polygon: any, event: any) => {
     if (polygon && event) {
+      const zone = polygon as DisasterZoneFeature;
       setPopup({
-        zone: polygon as DisasterZoneFeature,
+        zone: zone,
         x: event.clientX,
         y: event.clientY,
       });
+
+      // Ensure donation history is shown for clicked zone
+      if (zone.properties?.name !== currentHoveredZone?.properties?.name) {
+        console.log(
+          "Click: Setting donation history for",
+          zone.properties?.name
+        );
+        setCurrentHoveredZone(zone);
+        const donationHistory = generateDonationHistory(zone);
+        setDonationHistoryArcs(donationHistory);
+      }
     }
   };
 
@@ -196,19 +315,85 @@ const OpenReliefGlobe: React.FC = () => {
   const handleVerificationSuccess = (verificationData: any) => {
     console.log("Identity verified:", verificationData);
     setIdentityVerificationOpen(false);
-    // Redirect to dashboard with verification data
-    router.push({
-      pathname: "/dashboard",
-      query: {
-        verified: "true",
-        poolId: verificationData.poolId,
-        userId: verificationData.userId,
-      },
+    // Just close the modal - no redirect needed
+    // Future: handle claim modal based on query parameters
+  };
+
+  // Function to remove an arc after animation completes
+  const removeArc = (arcId: string) => {
+    setArcsData((prev) => prev.filter((arc) => arc.id !== arcId));
+    setArcIds((prev) => {
+      const newSet = new Set(prev);
+      newSet.delete(arcId);
+      return newSet;
     });
+
+    // Clean up timers
+    const cleanupTimer = arcCleanupTimers.current.get(arcId);
+    if (cleanupTimer) {
+      clearTimeout(cleanupTimer);
+      arcCleanupTimers.current.delete(arcId);
+    }
+  };
+
+  // Function to simulate a donation arc
+  const simulateDonation = (
+    startLat?: number,
+    startLng?: number,
+    targetZone?: DisasterZoneFeature
+  ) => {
+    const newArc = generateDonationArc(startLat, startLng, targetZone);
+
+    // Check if this arc already exists (prevent duplicates)
+    if (!arcIds.has(newArc.id)) {
+      setArcsData((prev) => [...prev, newArc]);
+      setArcIds((prev) => new Set([...prev, newArc.id]));
+
+      // Create start ring (green) - appears immediately
+      const startRing: RingData = {
+        id: `start-${newArc.id}`,
+        lat: newArc.startLat,
+        lng: newArc.startLng,
+        color: "green",
+      };
+      setRingsData((prev) => [...prev, startRing]);
+
+      // Remove start ring after arc dash length duration
+      const startRingDuration = newArc.duration * newArc.dashLength; // 40% of flight time
+      setTimeout(() => {
+        setRingsData((prev) => prev.filter((r) => r.id !== startRing.id));
+      }, startRingDuration);
+
+      // Create target ring (red) - appears when arc arrives
+      setTimeout(() => {
+        const targetRing: RingData = {
+          id: `target-${newArc.id}`,
+          lat: newArc.endLat,
+          lng: newArc.endLng,
+          color: "red",
+        };
+        setRingsData((prev) => [...prev, targetRing]);
+
+        // Remove target ring after same duration
+        setTimeout(() => {
+          setRingsData((prev) => prev.filter((r) => r.id !== targetRing.id));
+        }, startRingDuration);
+      }, newArc.duration); // When arc arrives
+
+      // Set up cleanup timer to remove arc after animation completes
+      const cleanupTimer = setTimeout(() => {
+        removeArc(newArc.id);
+      }, newArc.duration * 2); // Remove after 2x flight time like example
+
+      arcCleanupTimers.current.set(newArc.id, cleanupTimer);
+    }
   };
 
   const closePopup = () => {
     setPopup(null);
+    setCurrentHoveredZone(null);
+    setDonationHistoryArcs([]); // Clear donation history arcs when popup closes
+    setHoveredDonationId(null);
   };
 
   // Don't render anything if we're on the server
@@ -220,8 +405,25 @@ const OpenReliefGlobe: React.FC = () => {
     <div
       className="relative w-full h-screen bg-black overflow-hidden"
       onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
+      onMouseLeave={() => {
+        setIsHovered(false);
+        // Clear donation history arcs when leaving the globe area entirely
+        if (!popup) {
+          console.log("Mouse left globe area, clearing donation history");
+          setCurrentHoveredZone(null);
+          setDonationHistoryArcs([]);
+          setHoveredDonationId(null);
+        }
+      }}
     >
+      {/* Simulate Donation Button */}
+      <button
+        onClick={() => simulateDonation()}
+        className="absolute top-4 left-4 z-50 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors shadow-lg"
+      >
+        Simulate Donation {arcsData.length > 0 && `(${arcsData.length} active)`}
+      </button>
+
       <Globe
         ref={globeRef}
         globeImageUrl="//unpkg.com/three-globe/example/img/earth-dark.jpg"
@@ -285,41 +487,116 @@ const OpenReliefGlobe: React.FC = () => {
           if (globeRef.current) {
             globeRef.current.controls().autoRotate = !polygon && !isHovered;
           }
+
+          // Show donation history arcs when hovering over a disaster zone
+          if (polygon) {
+            const zone = polygon as DisasterZoneFeature;
+            // Only generate new arcs if we're hovering over a different zone
+            if (
+              zone.properties?.name !== currentHoveredZone?.properties?.name
+            ) {
+              console.log("Starting hover on new zone:", zone.properties?.name);
+
+              // Clear previous zone's donation highlighting
+              setHoveredDonationId(null);
+
+              setCurrentHoveredZone(zone);
+              const donationHistory = generateDonationHistory(zone);
+              console.log(
+                "Generated donation history:",
+                donationHistory.length,
+                "arcs for",
+                zone.properties?.name
+              );
+              setDonationHistoryArcs(donationHistory);
+            }
+          } else if (!polygon && currentHoveredZone && !popup) {
+            // Clear donation history arcs when hovering off polygon, unless popup is open
+            console.log(
+              "Clearing donation history arcs - no longer hovering and no popup"
+            );
+            setCurrentHoveredZone(null);
+            setDonationHistoryArcs([]);
+            setHoveredDonationId(null);
+          }
         }}
-        // Donor city points
-        pointsData={DONOR_LOCATIONS}
-        pointLat={(d: any) => d.lat}
-        pointLng={(d: any) => d.lng}
-        pointColor={() => "#22c55e"}
-        pointAltitude={0.01}
-        pointRadius={0.8}
-        pointLabel={(d: any) => `
-          <div style="
-            background: rgba(30, 41, 59, 0.95);
-            color: white;
-            padding: 8px;
-            border-radius: 6px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
-            border: 1px solid rgba(71, 85, 105, 0.5);
-            font-family: sans-serif;
-          ">
-            <div style="font-weight: 600; color: #22c55e; margin-bottom: 2px;">
-              ${d.name}
-            </div>
-            <div style="font-size: 11px; color: #94a3b8;">
-              Donor Location
-            </div>
-          </div>
-        `}
-        // Simple arcs - all visible
-        arcsData={arcsData}
-        arcColor={(d: any) => d?.color || ["#22c55e", "#ff6432"]}
-        arcStroke={(d: any) => d?.stroke || 0.8}
-        arcAltitude={(d: any) => d?.altitude || 0.15}
+        // Dynamic arcs data with native animation (combine regular arcs + donation history)
+        arcsData={(() => {
+          const combinedArcs = [
+            ...arcsData,
+            ...donationHistoryArcs.map((donation) => {
+              const isHighlighted = hoveredDonationId === donation.id;
+              const arc = {
+                id: donation.id,
+                startLat: donation.startLat,
+                startLng: donation.startLng,
+                endLat: donation.endLat,
+                endLng: donation.endLng,
+                color: isHighlighted
+                  ? [
+                      currentHoveredZone?.properties?.color || "#ff6432",
+                      currentHoveredZone?.properties?.color || "#ff6432",
+                    ]
+                  : ["#a0a0a0", "#a0a0a0"], // Light gray (simulating transparency)
+                altitude: 0.2, // Lower altitude
+
+                startTime: 0,
+
+                dashLength: 1, // Long dash to appear more solid
+              };
+              console.log("Created donation history arc:", {
+                id: arc.id,
+                startLat: arc.startLat,
+                startLng: arc.startLng,
+                endLat: arc.endLat,
+                endLng: arc.endLng,
+                color: arc.color,
+                altitude: arc.altitude,
+
+                dashLength: arc.dashLength,
+
+                from: donation.donorLocation,
+              });
+              return arc;
+            }),
+          ];
+          console.log(
+            "=== FINAL ARCS DATA ===",
+            "Total arcs being rendered:",
+            combinedArcs.length,
+            "Regular arcs:",
+            arcsData.length,
+            "Donation history arcs:",
+            donationHistoryArcs.length
+          );
+          if (combinedArcs.length > 0) {
+            console.log("Full arcs array:", combinedArcs);
+          }
+          return combinedArcs;
+        })()}
+        arcColor="color"
+        arcStroke="stroke"
+        arcAltitude="altitude"
         arcAltitudeAutoScale={0.3}
-        arcDashLength={(d: any) => d?.dashLength || 1.0}
-        arcDashGap={(d: any) => d?.dashGap || 0}
-        arcDashAnimateTime={(d: any) => d?.duration || 3000}
+        arcDashLength="dashLength"
+        arcDashGap="dashGap"
+        arcDashInitialGap="dashInitialGap"
+        arcDashAnimateTime="duration"
+        arcsTransitionDuration={0}
+        // Ring system for start/target indicators
+        ringsData={ringsData}
+        ringColor={(d: any) => {
+          const baseColor = d?.color || "orange";
+          if (baseColor === "green") {
+            return (t: number) => `rgba(34, 197, 94, ${1 - t})`; // Green fade out
+          } else if (baseColor === "red") {
+            return (t: number) => `rgba(239, 68, 68, ${1 - t})`; // Red fade out
+          }
+          return (t: number) => `rgba(255, 100, 50, ${1 - t})`; // Default orange
+        }}
+        ringMaxRadius={5}
+        ringPropagationSpeed={5}
+        ringRepeatPeriod={400}
         // Styling
         width={dimensions.width}
         height={dimensions.height}
@@ -329,11 +606,10 @@ const OpenReliefGlobe: React.FC = () => {
       {/* Popup for disaster zone interaction */}
       {popup && (
         <div
-          className="fixed z-50 bg-slate-800 border border-slate-600 rounded-lg shadow-xl p-4 min-w-[280px]"
+          className="fixed z-50 bg-slate-800 border border-slate-600 rounded-lg shadow-xl p-4 min-w-[320px] max-w-[400px]"
           style={{
-            left: popup.x - 140,
-            top: popup.y - 100,
-            transform: "translateY(-50%)",
+            right: "20px",
+            top: "20px",
           }}
         >
           <button
@@ -354,6 +630,41 @@ const OpenReliefGlobe: React.FC = () => {
               {popup.zone.properties.disasterType} -{" "}
               {popup.zone.properties.severity} severity
             </div>
+
+            {/* Recent Donations */}
+            {donationHistoryArcs.length > 0 && (
+              <div className="mb-4">
+                <h4 className="text-sm font-semibold text-blue-400 mb-2">
+                  Recent Donations
+                </h4>
+                <div className="max-h-32 overflow-y-auto space-y-1">
+                  {donationHistoryArcs.map((donation) => (
+                    <div
+                      key={donation.id}
+                      className={`text-xs p-2 rounded cursor-pointer transition-colors ${
+                        hoveredDonationId === donation.id
+                          ? "bg-slate-600 text-white"
+                          : "bg-slate-700 text-slate-300 hover:bg-slate-650"
+                      }`}
+                      onMouseEnter={() => setHoveredDonationId(donation.id)}
+                      onMouseLeave={() => setHoveredDonationId(null)}
+                    >
+                      <div className="flex justify-between items-center">
+                        <span className="font-medium">
+                          {donation.amount} {donation.currency}
+                        </span>
+                        <span className="text-slate-400">
+                          {donation.donorLocation}
+                        </span>
+                      </div>
+                      <div className="text-slate-400 text-xs">
+                        {donation.timestamp.toLocaleDateString()}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
 
             <div className="flex gap-2">
               <button
