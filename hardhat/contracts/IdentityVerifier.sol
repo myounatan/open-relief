@@ -14,7 +14,6 @@ contract IdentityVerifier is SelfVerificationRoot, Ownable {
     
     address public adminAddress;
     bytes32 public immutable configId;
-    uint256 private storedScope;
     
     // Maps nullifiers to user identifiers for verification tracking
     mapping(uint256 => uint256) internal _nullifierToUserIdentifier;
@@ -78,7 +77,7 @@ contract IdentityVerifier is SelfVerificationRoot, Ownable {
     {
         adminAddress = _adminAddress;
         configId = _configId;
-        storedScope = _scope;
+        _setScope(_scope);
         
         // Initialize DOMAIN_SEPARATOR
         DOMAIN_SEPARATOR = keccak256(
@@ -274,13 +273,6 @@ contract IdentityVerifier is SelfVerificationRoot, Ownable {
      */
     function getConfigId() external view returns (bytes32) {
         return configId;
-    }
-    
-    /**
-     * @dev Get the current scope
-     */
-    function getScope() external view returns (uint256) {
-        return storedScope;
     }
 
     /**
