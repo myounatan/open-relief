@@ -4,6 +4,7 @@ import { SelfAppBuilder, SelfQRcodeWrapper } from "@selfxyz/qrcode";
 import React, { useEffect, useState } from "react";
 import { DisasterZoneFeature } from "../lib/countryData";
 import { shouldUseMobileFlow } from "../lib/deviceDetection";
+import { ethers } from "ethers";
 
 interface IdentityVerificationProps {
   isOpen: boolean;
@@ -38,45 +39,83 @@ const IdentityVerification: React.FC<IdentityVerificationProps> = ({
     if (isOpen && wallets[0]) {
       const walletAddress = wallets[0].address;
 
+      console.log("🔍 Wallet Address:", walletAddress);
+
       // Use wallet address as user ID for blockchain addresses
       const userIdentifier = walletAddress;
       setUserId(userIdentifier);
 
+      console.log("🔍 User Identifier:", userIdentifier);
+
       try {
+        
         // Configure Self app with verification requirements
         const config = {
           appName: "OpenRelief",
-          scope: "openrelief-dev",
-          endpoint: process.env.NEXT_PUBLIC_IDENTITY_VERIFIER_ADDRESS!,
-          logoBase64: "", // Could add your logo here
-          userId: userIdentifier,
+          scope: "openrelief",
+          endpointType: "staging_celo",
+          endpoint: `${process.env.NEXT_PUBLIC_IDENTITY_VERIFIER_ADDRESS}`.toLowerCase(),
+          logoBase64: "https://i.postimg.cc/mrmVf9hm/self.png", // Could add your logo here
+          userId: `${userIdentifier}`,
           userIdType: "hex", // Using blockchain address
           version: 2,
-          userDefinedData:
-            "0x" +
-            Buffer.from(`pool_${disasterZone.properties.id}`)
-              .toString("hex")
-              .padEnd(128, "0"),
-          disclosures: {
-            olderThan: 18, // Match backend config exactly
-            excludedCountries: [],
-            ofac: true,
-            name: true, // Identity fields we want disclosed
-            nationality: true,
-          },
+          userDefinedData: "Bonjour Cannes!",
+            disclosures: {
+    
+            // // what you want to verify from users' identity
+              // minimumAge: 0,
+              // ofac: false,
+              // excludedCountries: [countries.BELGIUM],
+    
+            // //what you want users to reveal
+              // name: false,
+              // issuing_state: true,
+              nationality: true,
+              // date_of_birth: true,
+              // passport_number: false,
+              gender: true,
+              // expiry_date: false,
+            }
         };
 
         console.log("🔧 Self App Configuration:", {
           ...config,
-          userId: userIdentifier.substring(0, 10) + "...",
-          userDefinedData: config.userDefinedData.substring(0, 20) + "...",
+          // userId: userIdentifier.substring(0, 10) + "...",
+          // userDefinedData: config.userDefinedData.substring(0, 20) + "...",
         });
 
         console.log("🌐 Endpoint URL being used:", config.endpoint);
         console.log("🔍 NEXT_PUBLIC_URL env var:", process.env.NEXT_PUBLIC_URL);
 
         const selfAppConfig = new SelfAppBuilder(config).build();
-
+        // const selfAppConfig = new SelfAppBuilder({
+        //   version: 2,
+        //   appName: process.env.NEXT_PUBLIC_SELF_APP_NAME || "Self Workshop",
+        //   scope: process.env.NEXT_PUBLIC_SELF_SCOPE || "self-workshop",
+        //   endpoint: `${process.env.NEXT_PUBLIC_IDENTITY_VERIFIER_ADDRESS}`,
+        //   logoBase64:
+        //     "https://i.postimg.cc/mrmVf9hm/self.png", // url of a png image, base64 is accepted but not recommended
+        //   userId: ethers.ZeroAddress,
+        //   endpointType: "staging_celo",
+        //   userIdType: "hex", // use 'hex' for ethereum address or 'uuid' for uuidv4
+        //   userDefinedData: "Bonjour Cannes!",
+        //   disclosures: {
+  
+        //   // // what you want to verify from users' identity
+        //     minimumAge: 18,
+        //     // ofac: false,
+        //     // excludedCountries: [countries.BELGIUM],
+  
+        //   // //what you want users to reveal
+        //     // name: false,
+        //     // issuing_state: true,
+        //     nationality: true,
+        //     // date_of_birth: true,
+        //     // passport_number: false,
+        //     gender: true,
+        //     // expiry_date: false,
+        //   }
+        // }).build();
         setSelfApp(selfAppConfig);
 
         // Generate deeplink for mobile

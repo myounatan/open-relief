@@ -5,4 +5,7 @@ import type * as reliefPoolsSol from "./ReliefPools.sol";
 export type { reliefPoolsSol };
 export type { IdentityVerifier } from "./IdentityVerifier";
 export type { Lock } from "./Lock";
+export type { MockCCTPTransmitter } from "./MockCCTPTransmitter";
+export type { MockIdentityVerificationHub } from "./MockIdentityVerificationHub";
+export type { MockUSDC } from "./MockUSDC";
 export type { TypedMemView } from "./TypedMemView";

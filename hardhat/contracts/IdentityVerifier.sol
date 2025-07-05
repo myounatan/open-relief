@@ -108,54 +108,55 @@ contract IdentityVerifier is SelfVerificationRoot, Ownable {
      */
     function customVerificationHook(
         ISelfVerificationRoot.GenericDiscloseOutputV2 memory output,
-        bytes memory /* userData */
+        bytes memory userData
     ) internal override {
-        // Validation checks (similar to airdrop example)
-        if (output.userIdentifier == 0) revert InvalidUserIdentifier();
-        if (_nullifierToUserIdentifier[output.nullifier] != 0) revert RegisteredNullifier();
-        if (_verifiedUserIdentifiers[output.userIdentifier]) revert UserIdentifierAlreadyVerified();
-        if (bytes(output.nationality).length == 0) revert InvalidNationality();
+        // // Validation checks (similar to airdrop example)
+        // if (output.userIdentifier == 0) revert InvalidUserIdentifier();
+        // if (_nullifierToUserIdentifier[output.nullifier] != 0) revert RegisteredNullifier();
+        // if (_verifiedUserIdentifiers[output.userIdentifier]) revert UserIdentifierAlreadyVerified();
+        // if (bytes(output.nationality).length == 0) revert InvalidNationality();
         
-        // Get the user's address from the transaction context
-        address userAddress = msg.sender;
+        // // Get the user's address from the transaction context
+        // address userAddress = msg.sender;
         
-        // Store verification data
-        _nullifierToUserIdentifier[output.nullifier] = output.userIdentifier;
-        _verifiedUserIdentifiers[output.userIdentifier] = true;
+        // // Store verification data
+        // // _nullifierToUserIdentifier[output.nullifier] = output.userIdentifier;
+        // // _verifiedUserIdentifiers[output.userIdentifier] = true;
         
-        verifiedUsers[userAddress] = VerificationData({
-            nullifier: output.nullifier,
-            userIdentifier: output.userIdentifier,
-            nationality: output.nationality,
-            timestamp: block.timestamp,
-            isVerified: true
-        });
+        // verifiedUsers[userAddress] = VerificationData({
+        //     nullifier: output.nullifier,
+        //     userIdentifier: output.userIdentifier,
+        //     nationality: output.nationality,
+        //     timestamp: block.timestamp,
+        //     isVerified: true
+        // });
         
-        // Generate admin signature automatically
-        bytes memory adminSignature = _generateAdminSignature(
-            userAddress,
-            output.nullifier,
-            output.userIdentifier,
-            output.nationality,
-            block.timestamp
-        );
+        // // Generate admin signature automatically
+        // bytes memory adminSignature = _generateAdminSignature(
+        //     userAddress,
+        //     output.nullifier,
+        //     output.userIdentifier,
+        //     output.nationality,
+        //     block.timestamp
+        // );
         
-        // Store the signature
-        adminSignatures[userAddress] = adminSignature;
+        // // Store the signature
+        // adminSignatures[userAddress] = adminSignature;
+
+        // emit UserVerified(
+        //     userAddress, 
+        //     output.nullifier, 
+        //     output.userIdentifier, 
+        //     output.nationality, 
+        //     block.timestamp
+        // );
         
-        emit UserVerified(
-            userAddress, 
-            output.nullifier, 
-            output.userIdentifier, 
-            output.nationality, 
-            block.timestamp
-        );
-        
-        emit AdminSignatureGenerated(
-            userAddress,
-            adminSignature,
-            block.timestamp
-        );
+        // emit AdminSignatureGenerated(
+        //     userAddress,
+        //     adminSignature,
+        //     block.timestamp
+        // );
+        return;
     }
     
     /**
@@ -279,7 +280,7 @@ contract IdentityVerifier is SelfVerificationRoot, Ownable {
      * @dev Get the current scope
      */
     function getScope() external view returns (uint256) {
-        return getScopeFromParent();
+        return storedScope;
     }
 
     /**
@@ -287,15 +288,5 @@ contract IdentityVerifier is SelfVerificationRoot, Ownable {
      */
     function setScope(uint256 _scope) external onlyOwner {
         storedScope = _scope;
-    }
-    
-    /**
-     * @dev Internal function to get scope from parent contract
-     */
-    function getScopeFromParent() internal view returns (uint256) {
-        // Access the scope from the parent contract
-        // We need to use assembly or a different approach since scope is private
-        // For now, let's store it in the constructor
-        return storedScope;
     }
 }
