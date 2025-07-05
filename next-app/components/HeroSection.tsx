@@ -28,7 +28,7 @@ const HeroSection = () => {
   }, []);
 
   return (
-    <div className="absolute top-0 left-0 z-10 w-80 h-screen bg-gradient-to-r from-slate-900 via-slate-800 to-transparent backdrop-blur-sm">
+    <div className="absolute top-0 left-0 z-10 w-80 h-screen backdrop-blur-sm">
       <div className="p-8 h-full flex flex-col justify-center">
         <div className="text-white space-y-8">
           {/* Live Counters */}

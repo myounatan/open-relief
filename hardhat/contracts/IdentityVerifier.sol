@@ -287,6 +287,6 @@ contract IdentityVerifier is SelfVerificationRoot, Ownable {
      * @dev Set the scope
      */
     function setScope(uint256 _scope) external onlyOwner {
-        storedScope = _scope;
+        _setScope(_scope);
     }
 }

@@ -32,10 +32,7 @@ function MyApp({ Component, pageProps }: AppProps) {
           crossOrigin=""
         />
 
-        <link rel="icon" href="/favicons/favicon.ico" sizes="any" />
-        <link rel="icon" href="/favicons/icon.svg" type="image/svg+xml" />
-        <link rel="apple-touch-icon" href="/favicons/apple-touch-icon.png" />
-        <link rel="manifest" href="/favicons/manifest.json" />
+        <link rel="icon" href="/favicon.ico" sizes="any" />
 
         <title>OpenRelief · Instant Verified Aid</title>
         <meta

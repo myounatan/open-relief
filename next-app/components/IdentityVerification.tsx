@@ -52,20 +52,19 @@ const IdentityVerification: React.FC<IdentityVerificationProps> = ({
           appName: "OpenRelief",
           scope: "openrelief",
           endpointType: "staging_celo",
-          endpoint:
-            `${process.env.NEXT_PUBLIC_IDENTITY_VERIFIER_ADDRESS}`.toLowerCase(),
+          endpoint: `${process.env.NEXT_PUBLIC_IDENTITY_VERIFIER_ADDRESS}`,
           logoBase64: "https://i.postimg.cc/mrmVf9hm/self.png", // Could add your logo here
           userId: `${userIdentifier}`,
           userIdType: "hex", // Using blockchain address
           version: 2,
           userDefinedData: "Bonjour Cannes!",
           disclosures: {
-            // // what you want to verify from users' identity
+            // what you want to verify from users' identity
             // minimumAge: 0,
             // ofac: false,
             // excludedCountries: [countries.BELGIUM],
 
-            // //what you want users to reveal
+            //what you want users to reveal
             // name: false,
             // issuing_state: true,
             nationality: true,
