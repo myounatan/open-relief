@@ -106,8 +106,10 @@ contract ReliefPools is Ownable, IMessageHandlerV2 {
     mapping(uint256 => ReliefPool) public reliefPools;
     mapping(uint256 => mapping(address => Beneficiary)) public poolBeneficiaries;
     mapping(uint256 => mapping(address => Donor)) public poolDonors;
-    mapping(uint256 => mapping(bytes32 => bool)) public hasPersonClaimedFromPool; // poolId => personHash => bool
-    mapping(bytes32 => uint256[]) public personClaimedPools; // personHash => poolIds[]
+    // SECURITY: Track claims by userIdentifier only (not nullifier + userIdentifier)
+    // This prevents multiple claims from the same person using different documents
+    mapping(uint256 => mapping(uint256 => bool)) public hasPersonClaimedFromPool; // poolId => userIdentifier => bool
+    mapping(uint256 => uint256[]) public personClaimedPools; // userIdentifier => poolIds[]
     
     // Events
     event ReliefPoolCreated(
@@ -161,7 +163,7 @@ contract ReliefPools is Ownable, IMessageHandlerV2 {
         adminAddress = _adminAddress;
         usdcToken = IERC20(_usdcToken);
         cctpMessageTransmitter = _cctpMessageTransmitter;
-        transferOwnership(_adminAddress);
+        transferOwnership(msg.sender);
         
         // Initialize DOMAIN_SEPARATOR
         DOMAIN_SEPARATOR = keccak256(
@@ -375,13 +377,10 @@ contract ReliefPools is Ownable, IMessageHandlerV2 {
     ) external {
         ReliefPool storage pool = reliefPools[poolId];
         
-        // Generate unique person hash from nullifier + userIdentifier
-        bytes32 personHash = _generatePersonHash(nullifier, userIdentifier);
-        
         // Validation checks
         require(pool.id == poolId, "InvalidPool");
         require(pool.isActive, "PoolInactive");
-        require(!hasPersonClaimedFromPool[poolId][personHash], "AlreadyClaimed");
+        require(!hasPersonClaimedFromPool[poolId][userIdentifier], "AlreadyClaimed");
         require(recipient != address(0), "InvalidRecipient");
         
         // Verify nationality matches pool requirement
@@ -413,9 +412,9 @@ contract ReliefPools is Ownable, IMessageHandlerV2 {
             timestamp: block.timestamp
         });
         
-        // Mark as claimed (using person hash, not wallet address)
-        hasPersonClaimedFromPool[poolId][personHash] = true;
-        personClaimedPools[personHash].push(poolId);
+        // Mark as claimed (using userIdentifier, not wallet address)
+        hasPersonClaimedFromPool[poolId][userIdentifier] = true;
+        personClaimedPools[userIdentifier].push(poolId);
         
         // Transfer funds to recipient
         usdcToken.safeTransfer(recipient, claimAmount);
@@ -455,13 +454,6 @@ contract ReliefPools is Ownable, IMessageHandlerV2 {
         
         pool.isActive = !pool.isActive;
         emit PoolStatusChanged(poolId, pool.isActive);
-    }
-    
-    /**
-     * @dev Generate unique person hash from nullifier and userIdentifier
-     */
-    function _generatePersonHash(uint256 nullifier, uint256 userIdentifier) internal pure returns (bytes32) {
-        return keccak256(abi.encodePacked(nullifier, userIdentifier));
     }
     
     /**
@@ -516,26 +508,19 @@ contract ReliefPools is Ownable, IMessageHandlerV2 {
     }
     
     /**
-     * @dev Check if person has claimed from a specific pool using nullifier and userIdentifier
+     * @dev Check if person has claimed from a specific pool using userIdentifier
      */
     function checkPersonClaimedFromPool(uint256 poolId, uint256 nullifier, uint256 userIdentifier) external view returns (bool) {
-        bytes32 personHash = _generatePersonHash(nullifier, userIdentifier);
-        return hasPersonClaimedFromPool[poolId][personHash];
+        // Note: nullifier parameter kept for backward compatibility but not used
+        return hasPersonClaimedFromPool[poolId][userIdentifier];
     }
     
     /**
-     * @dev Get all pools a person has claimed from using nullifier and userIdentifier
+     * @dev Get all pools a person has claimed from using userIdentifier
      */
     function getPersonClaimedPools(uint256 nullifier, uint256 userIdentifier) external view returns (uint256[] memory) {
-        bytes32 personHash = _generatePersonHash(nullifier, userIdentifier);
-        return personClaimedPools[personHash];
-    }
-    
-    /**
-     * @dev Generate person hash (public function for frontend use)
-     */
-    function generatePersonHash(uint256 nullifier, uint256 userIdentifier) external pure returns (bytes32) {
-        return _generatePersonHash(nullifier, userIdentifier);
+        // Note: nullifier parameter kept for backward compatibility but not used
+        return personClaimedPools[userIdentifier];
     }
 
     /**
