@@ -543,7 +543,7 @@ describe("ReliefPools", function () {
       const timestamp = Math.floor(Date.now() / 1000);
       
       // Check not claimed initially
-      const notClaimed = await reliefPools.checkPersonClaimedFromPool(poolId, MOCK_NULLIFIER_1, MOCK_USER_IDENTIFIER_1);
+      const notClaimed = await reliefPools.checkPersonClaimedFromPool(poolId, MOCK_USER_IDENTIFIER_1);
       expect(notClaimed).to.be.false;
       
       // Create admin signature and claim
@@ -585,7 +585,7 @@ describe("ReliefPools", function () {
       );
 
       // Check claimed after claim
-      const claimed = await reliefPools.checkPersonClaimedFromPool(poolId, MOCK_NULLIFIER_1, MOCK_USER_IDENTIFIER_1);
+      const claimed = await reliefPools.checkPersonClaimedFromPool(poolId, MOCK_USER_IDENTIFIER_1);
       expect(claimed).to.be.true;
     });
 
@@ -978,7 +978,7 @@ describe("ReliefPools", function () {
       const timestamp = Math.floor(Date.now() / 1000);
       
       // Check no pools claimed initially
-      const noPools = await reliefPools.getPersonClaimedPools(MOCK_NULLIFIER_1, MOCK_USER_IDENTIFIER_1);
+      const noPools = await reliefPools.getPersonClaimedPools(MOCK_USER_IDENTIFIER_1);
       expect(noPools.length).to.equal(0);
       
       // Create admin signature and claim
@@ -1020,7 +1020,7 @@ describe("ReliefPools", function () {
       );
 
       // Check pools claimed after claim
-      const claimedPools = await reliefPools.getPersonClaimedPools(MOCK_NULLIFIER_1, MOCK_USER_IDENTIFIER_1);
+      const claimedPools = await reliefPools.getPersonClaimedPools(MOCK_USER_IDENTIFIER_1);
       expect(claimedPools.length).to.equal(1);
       expect(claimedPools[0]).to.equal(poolId);
     });

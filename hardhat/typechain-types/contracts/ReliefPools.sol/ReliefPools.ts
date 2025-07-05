@@ -180,7 +180,7 @@ export interface ReliefPoolsInterface extends Interface {
   ): string;
   encodeFunctionData(
     functionFragment: "checkPersonClaimedFromPool",
-    values: [BigNumberish, BigNumberish, BigNumberish]
+    values: [BigNumberish, BigNumberish]
   ): string;
   encodeFunctionData(
     functionFragment: "claimRelief",
@@ -231,7 +231,7 @@ export interface ReliefPoolsInterface extends Interface {
   ): string;
   encodeFunctionData(
     functionFragment: "getPersonClaimedPools",
-    values: [BigNumberish, BigNumberish]
+    values: [BigNumberish]
   ): string;
   encodeFunctionData(
     functionFragment: "getReliefPool",
@@ -598,11 +598,7 @@ export interface ReliefPools extends BaseContract {
   cctpMessageTransmitter: TypedContractMethod<[], [string], "view">;
 
   checkPersonClaimedFromPool: TypedContractMethod<
-    [
-      poolId: BigNumberish,
-      nullifier: BigNumberish,
-      userIdentifier: BigNumberish
-    ],
+    [poolId: BigNumberish, userIdentifier: BigNumberish],
     [boolean],
     "view"
   >;
@@ -672,7 +668,7 @@ export interface ReliefPools extends BaseContract {
   >;
 
   getPersonClaimedPools: TypedContractMethod<
-    [nullifier: BigNumberish, userIdentifier: BigNumberish],
+    [userIdentifier: BigNumberish],
     [bigint[]],
     "view"
   >;
@@ -844,11 +840,7 @@ export interface ReliefPools extends BaseContract {
   getFunction(
     nameOrSignature: "checkPersonClaimedFromPool"
   ): TypedContractMethod<
-    [
-      poolId: BigNumberish,
-      nullifier: BigNumberish,
-      userIdentifier: BigNumberish
-    ],
+    [poolId: BigNumberish, userIdentifier: BigNumberish],
     [boolean],
     "view"
   >;
@@ -922,11 +914,7 @@ export interface ReliefPools extends BaseContract {
   >;
   getFunction(
     nameOrSignature: "getPersonClaimedPools"
-  ): TypedContractMethod<
-    [nullifier: BigNumberish, userIdentifier: BigNumberish],
-    [bigint[]],
-    "view"
-  >;
+  ): TypedContractMethod<[userIdentifier: BigNumberish], [bigint[]], "view">;
   getFunction(
     nameOrSignature: "getReliefPool"
   ): TypedContractMethod<

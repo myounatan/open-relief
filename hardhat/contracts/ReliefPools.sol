@@ -305,7 +305,7 @@ contract ReliefPools is Ownable, IMessageHandlerV2 {
             timestamp: block.timestamp,
             isCrossChain: true,
             sourceDomain: sourceDomain,
-            location: "cross-chain" // simplified for now
+            location: location
         });
         
         emit DonationMade(
@@ -314,7 +314,7 @@ contract ReliefPools is Ownable, IMessageHandlerV2 {
             sourceDomain,
             donationAmount,
             block.timestamp,
-            "cross-chain"
+            location
         );
     }
     
@@ -510,7 +510,7 @@ contract ReliefPools is Ownable, IMessageHandlerV2 {
     /**
      * @dev Check if person has claimed from a specific pool using userIdentifier
      */
-    function checkPersonClaimedFromPool(uint256 poolId, uint256 nullifier, uint256 userIdentifier) external view returns (bool) {
+    function checkPersonClaimedFromPool(uint256 poolId, uint256 userIdentifier) external view returns (bool) {
         // Note: nullifier parameter kept for backward compatibility but not used
         return hasPersonClaimedFromPool[poolId][userIdentifier];
     }
@@ -518,7 +518,7 @@ contract ReliefPools is Ownable, IMessageHandlerV2 {
     /**
      * @dev Get all pools a person has claimed from using userIdentifier
      */
-    function getPersonClaimedPools(uint256 nullifier, uint256 userIdentifier) external view returns (uint256[] memory) {
+    function getPersonClaimedPools(uint256 userIdentifier) external view returns (uint256[] memory) {
         // Note: nullifier parameter kept for backward compatibility but not used
         return personClaimedPools[userIdentifier];
     }
