@@ -8,7 +8,7 @@ dataSources:
     name: ReliefPools
     network: base-sepolia
     source:
-      address: "0xB39C048039f4cD4BE595877660a2420A2eb28d19"
+      address: "0xB7BEa46AA1439F4511bE766842bc11D25F573D70"
       abi: ReliefPools
       startBlock: 27993783
     mapping:
