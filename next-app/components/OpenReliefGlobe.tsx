@@ -526,7 +526,7 @@ const OpenReliefGlobe: React.FC<OpenReliefGlobeProps> = ({
 
   const handleVerificationSuccess = (verificationData: any) => {
     console.log("Identity verified:", verificationData);
-    // setIdentityVerificationOpen(false);
+    setIdentityVerificationOpen(false);
     // Just close the modal - no redirect needed
     // Future: handle claim modal based on query parameters
   };
