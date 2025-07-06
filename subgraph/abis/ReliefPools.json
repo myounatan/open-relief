@@ -17,9 +17,9 @@
     "inputs": [
       {
         "indexed": true,
-        "internalType": "uint256",
+        "internalType": "string",
         "name": "poolId",
-        "type": "uint256"
+        "type": "string"
       },
       {
         "indexed": true,
@@ -60,9 +60,9 @@
     "inputs": [
       {
         "indexed": true,
-        "internalType": "uint256",
+        "internalType": "string",
         "name": "poolId",
-        "type": "uint256"
+        "type": "string"
       },
       {
         "indexed": true,
@@ -134,9 +134,9 @@
     "inputs": [
       {
         "indexed": true,
-        "internalType": "uint256",
+        "internalType": "string",
         "name": "poolId",
-        "type": "uint256"
+        "type": "string"
       },
       {
         "indexed": false,
@@ -153,9 +153,9 @@
     "inputs": [
       {
         "indexed": true,
-        "internalType": "uint256",
+        "internalType": "string",
         "name": "poolId",
-        "type": "uint256"
+        "type": "string"
       },
       {
         "indexed": false,
@@ -226,7 +226,7 @@
   },
   {
     "inputs": [
-      { "internalType": "uint256", "name": "poolId", "type": "uint256" },
+      { "internalType": "string", "name": "poolId", "type": "string" },
       { "internalType": "uint256", "name": "userIdentifier", "type": "uint256" }
     ],
     "name": "checkPersonClaimedFromPool",
@@ -236,7 +236,7 @@
   },
   {
     "inputs": [
-      { "internalType": "uint256", "name": "poolId", "type": "uint256" },
+      { "internalType": "string", "name": "poolId", "type": "string" },
       { "internalType": "uint256", "name": "nullifier", "type": "uint256" },
       {
         "internalType": "uint256",
@@ -245,8 +245,7 @@
       },
       { "internalType": "string", "name": "nationality", "type": "string" },
       { "internalType": "uint256", "name": "timestamp", "type": "uint256" },
-      { "internalType": "address", "name": "recipient", "type": "address" },
-      { "internalType": "bytes", "name": "adminSignature", "type": "bytes" }
+      { "internalType": "address", "name": "recipient", "type": "address" }
     ],
     "name": "claimRelief",
     "outputs": [],
@@ -255,24 +254,7 @@
   },
   {
     "inputs": [
-      { "internalType": "uint256", "name": "poolId", "type": "uint256" },
-      { "internalType": "uint256", "name": "nullifier", "type": "uint256" },
-      {
-        "internalType": "uint256",
-        "name": "userIdentifier",
-        "type": "uint256"
-      },
-      { "internalType": "string", "name": "nationality", "type": "string" },
-      { "internalType": "uint256", "name": "timestamp", "type": "uint256" },
-      { "internalType": "bytes", "name": "adminSignature", "type": "bytes" }
-    ],
-    "name": "claimReliefToSelf",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
+      { "internalType": "string", "name": "poolId", "type": "string" },
       {
         "internalType": "enum ReliefPools.DisasterTypeEnum",
         "name": "disasterType",
@@ -295,13 +277,13 @@
       }
     ],
     "name": "createReliefPool",
-    "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
+    "outputs": [{ "internalType": "string", "name": "", "type": "string" }],
     "stateMutability": "nonpayable",
     "type": "function"
   },
   {
     "inputs": [
-      { "internalType": "uint256", "name": "poolId", "type": "uint256" },
+      { "internalType": "string", "name": "poolId", "type": "string" },
       { "internalType": "uint256", "name": "amount", "type": "uint256" },
       { "internalType": "string", "name": "location", "type": "string" }
     ],
@@ -320,8 +302,15 @@
     "type": "function"
   },
   {
+    "inputs": [],
+    "name": "getAllPoolIds",
+    "outputs": [{ "internalType": "string[]", "name": "", "type": "string[]" }],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
     "inputs": [
-      { "internalType": "uint256", "name": "poolId", "type": "uint256" },
+      { "internalType": "string", "name": "poolId", "type": "string" },
       { "internalType": "address", "name": "beneficiary", "type": "address" }
     ],
     "name": "getBeneficiary",
@@ -359,7 +348,7 @@
   },
   {
     "inputs": [
-      { "internalType": "uint256", "name": "poolId", "type": "uint256" },
+      { "internalType": "string", "name": "poolId", "type": "string" },
       { "internalType": "address", "name": "donor", "type": "address" }
     ],
     "name": "getDonor",
@@ -395,21 +384,28 @@
       { "internalType": "uint256", "name": "userIdentifier", "type": "uint256" }
     ],
     "name": "getPersonClaimedPools",
-    "outputs": [
-      { "internalType": "uint256[]", "name": "", "type": "uint256[]" }
-    ],
+    "outputs": [{ "internalType": "string[]", "name": "", "type": "string[]" }],
     "stateMutability": "view",
     "type": "function"
   },
   {
     "inputs": [
-      { "internalType": "uint256", "name": "poolId", "type": "uint256" }
+      { "internalType": "uint256", "name": "index", "type": "uint256" }
+    ],
+    "name": "getPoolIdByIndex",
+    "outputs": [{ "internalType": "string", "name": "", "type": "string" }],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      { "internalType": "string", "name": "poolId", "type": "string" }
     ],
     "name": "getReliefPool",
     "outputs": [
       {
         "components": [
-          { "internalType": "uint256", "name": "id", "type": "uint256" },
+          { "internalType": "string", "name": "id", "type": "string" },
           {
             "internalType": "enum ReliefPools.DisasterTypeEnum",
             "name": "disasterType",
@@ -501,7 +497,7 @@
   },
   {
     "inputs": [
-      { "internalType": "uint256", "name": "", "type": "uint256" },
+      { "internalType": "string", "name": "", "type": "string" },
       { "internalType": "uint256", "name": "", "type": "uint256" }
     ],
     "name": "hasPersonClaimedFromPool",
@@ -522,13 +518,13 @@
       { "internalType": "uint256", "name": "", "type": "uint256" }
     ],
     "name": "personClaimedPools",
-    "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
+    "outputs": [{ "internalType": "string", "name": "", "type": "string" }],
     "stateMutability": "view",
     "type": "function"
   },
   {
     "inputs": [
-      { "internalType": "uint256", "name": "", "type": "uint256" },
+      { "internalType": "string", "name": "", "type": "string" },
       { "internalType": "address", "name": "", "type": "address" }
     ],
     "name": "poolBeneficiaries",
@@ -547,15 +543,8 @@
     "type": "function"
   },
   {
-    "inputs": [],
-    "name": "poolCounter",
-    "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
     "inputs": [
-      { "internalType": "uint256", "name": "", "type": "uint256" },
+      { "internalType": "string", "name": "", "type": "string" },
       { "internalType": "address", "name": "", "type": "address" }
     ],
     "name": "poolDonors",
@@ -573,9 +562,16 @@
   },
   {
     "inputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
+    "name": "poolIds",
+    "outputs": [{ "internalType": "string", "name": "", "type": "string" }],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [{ "internalType": "string", "name": "", "type": "string" }],
     "name": "reliefPools",
     "outputs": [
-      { "internalType": "uint256", "name": "id", "type": "uint256" },
+      { "internalType": "string", "name": "id", "type": "string" },
       {
         "internalType": "enum ReliefPools.DisasterTypeEnum",
         "name": "disasterType",
@@ -639,7 +635,7 @@
   },
   {
     "inputs": [
-      { "internalType": "uint256", "name": "poolId", "type": "uint256" }
+      { "internalType": "string", "name": "poolId", "type": "string" }
     ],
     "name": "togglePoolStatus",
     "outputs": [],
@@ -666,7 +662,6 @@
   },
   {
     "inputs": [
-      { "internalType": "address", "name": "userAddress", "type": "address" },
       { "internalType": "uint256", "name": "nullifier", "type": "uint256" },
       {
         "internalType": "uint256",

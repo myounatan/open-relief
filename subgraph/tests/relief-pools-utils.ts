@@ -1,5 +1,5 @@
 import { newMockEvent } from "matchstick-as"
-import { ethereum, BigInt, Address } from "@graphprotocol/graph-ts"
+import { ethereum, Address, BigInt } from "@graphprotocol/graph-ts"
 import {
   DonationMade,
   FundsClaimed,
@@ -9,7 +9,7 @@ import {
 } from "../generated/ReliefPools/ReliefPools"
 
 export function createDonationMadeEvent(
-  poolId: BigInt,
+  poolId: string,
   donor: Address,
   sourceDomain: BigInt,
   amount: BigInt,
@@ -21,7 +21,7 @@ export function createDonationMadeEvent(
   donationMadeEvent.parameters = new Array()
 
   donationMadeEvent.parameters.push(
-    new ethereum.EventParam("poolId", ethereum.Value.fromUnsignedBigInt(poolId))
+    new ethereum.EventParam("poolId", ethereum.Value.fromString(poolId))
   )
   donationMadeEvent.parameters.push(
     new ethereum.EventParam("donor", ethereum.Value.fromAddress(donor))
@@ -49,7 +49,7 @@ export function createDonationMadeEvent(
 }
 
 export function createFundsClaimedEvent(
-  poolId: BigInt,
+  poolId: string,
   claimer: Address,
   recipient: Address,
   nullifier: BigInt,
@@ -63,7 +63,7 @@ export function createFundsClaimedEvent(
   fundsClaimedEvent.parameters = new Array()
 
   fundsClaimedEvent.parameters.push(
-    new ethereum.EventParam("poolId", ethereum.Value.fromUnsignedBigInt(poolId))
+    new ethereum.EventParam("poolId", ethereum.Value.fromString(poolId))
   )
   fundsClaimedEvent.parameters.push(
     new ethereum.EventParam("claimer", ethereum.Value.fromAddress(claimer))
@@ -125,7 +125,7 @@ export function createOwnershipTransferredEvent(
 }
 
 export function createPoolStatusChangedEvent(
-  poolId: BigInt,
+  poolId: string,
   isActive: boolean
 ): PoolStatusChanged {
   let poolStatusChangedEvent = changetype<PoolStatusChanged>(newMockEvent())
@@ -133,7 +133,7 @@ export function createPoolStatusChangedEvent(
   poolStatusChangedEvent.parameters = new Array()
 
   poolStatusChangedEvent.parameters.push(
-    new ethereum.EventParam("poolId", ethereum.Value.fromUnsignedBigInt(poolId))
+    new ethereum.EventParam("poolId", ethereum.Value.fromString(poolId))
   )
   poolStatusChangedEvent.parameters.push(
     new ethereum.EventParam("isActive", ethereum.Value.fromBoolean(isActive))
@@ -143,7 +143,7 @@ export function createPoolStatusChangedEvent(
 }
 
 export function createReliefPoolCreatedEvent(
-  poolId: BigInt,
+  poolId: string,
   disasterType: i32,
   classification: i32,
   nationalityRequired: string,
@@ -154,7 +154,7 @@ export function createReliefPoolCreatedEvent(
   reliefPoolCreatedEvent.parameters = new Array()
 
   reliefPoolCreatedEvent.parameters.push(
-    new ethereum.EventParam("poolId", ethereum.Value.fromUnsignedBigInt(poolId))
+    new ethereum.EventParam("poolId", ethereum.Value.fromString(poolId))
   )
   reliefPoolCreatedEvent.parameters.push(
     new ethereum.EventParam(

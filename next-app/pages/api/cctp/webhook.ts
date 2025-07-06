@@ -483,7 +483,9 @@ async function processCrossChainDonation(
     }
 
     // Re-throw other errors
-    throw error;
+    console.log("error");
+    console.log(error.message);
+    // throw error;
   }
 
   // Step 7: Final check before transaction to handle race conditions

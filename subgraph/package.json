@@ -1,6 +1,6 @@
 {
-  "name": "open-relief-subgraph-base-sepolia",
-  "license": "UNLICENSED",
+  "name": "subgraph",
+  "version": "1.0.0",
   "scripts": {
     "codegen": "graph codegen",
     "build": "graph build",
@@ -14,5 +14,9 @@
     "@graphprotocol/graph-cli": "0.97.1",
     "@graphprotocol/graph-ts": "0.37.0"
   },
-  "devDependencies": { "matchstick-as": "0.6.0" }
+  "devDependencies": { "matchstick-as": "0.6.0" },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "packageManager": "pnpm@10.12.4"
 }

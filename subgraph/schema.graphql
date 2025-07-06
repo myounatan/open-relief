@@ -1,6 +1,6 @@
 type DonationMade @entity(immutable: true) {
   id: Bytes!
-  poolId: BigInt! # uint256
+  poolId: String! # string
   donor: Bytes! # address
   sourceDomain: BigInt! # uint32
   amount: BigInt! # uint256
@@ -13,7 +13,7 @@ type DonationMade @entity(immutable: true) {
 
 type FundsClaimed @entity(immutable: true) {
   id: Bytes!
-  poolId: BigInt! # uint256
+  poolId: String! # string
   claimer: Bytes! # address
   recipient: Bytes! # address
   nullifier: BigInt! # uint256
@@ -37,7 +37,7 @@ type OwnershipTransferred @entity(immutable: true) {
 
 type PoolStatusChanged @entity(immutable: true) {
   id: Bytes!
-  poolId: BigInt! # uint256
+  poolId: String! # string
   isActive: Boolean! # bool
   blockNumber: BigInt!
   blockTimestamp: BigInt!
@@ -46,7 +46,7 @@ type PoolStatusChanged @entity(immutable: true) {
 
 type ReliefPoolCreated @entity(immutable: true) {
   id: Bytes!
-  poolId: BigInt! # uint256
+  poolId: String! # string
   disasterType: Int! # uint8
   classification: Int! # uint8
   nationalityRequired: String! # string

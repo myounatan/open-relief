@@ -6,7 +6,7 @@ import {
   beforeAll,
   afterAll
 } from "matchstick-as/assembly/index"
-import { BigInt, Address } from "@graphprotocol/graph-ts"
+import { Address, BigInt } from "@graphprotocol/graph-ts"
 import { DonationMade } from "../generated/schema"
 import { DonationMade as DonationMadeEvent } from "../generated/ReliefPools/ReliefPools"
 import { handleDonationMade } from "../src/relief-pools"
@@ -17,7 +17,7 @@ import { createDonationMadeEvent } from "./relief-pools-utils"
 
 describe("Describe entity assertions", () => {
   beforeAll(() => {
-    let poolId = BigInt.fromI32(234)
+    let poolId = "Example string value"
     let donor = Address.fromString("0x0000000000000000000000000000000000000001")
     let sourceDomain = BigInt.fromI32(234)
     let amount = BigInt.fromI32(234)
@@ -49,7 +49,7 @@ describe("Describe entity assertions", () => {
       "DonationMade",
       "0xa16081f360e3847006db660bae1c6d1b2e17ec2a-1",
       "poolId",
-      "234"
+      "Example string value"
     )
     assert.fieldEquals(
       "DonationMade",

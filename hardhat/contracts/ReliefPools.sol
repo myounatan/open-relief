@@ -186,10 +186,10 @@ contract ReliefPools is Ownable, IMessageHandlerV2 {
     /**
      * @dev Modifier to ensure only CCTP Message Transmitter can call hook functions
      */
-    modifier onlyCCTPTransmitter() {
-        require(msg.sender == cctpMessageTransmitter, "UnauthorizedCaller");
-        _;
-    }
+    // modifier onlyCCTPTransmitter() {
+    //     require(msg.sender == cctpMessageTransmitter, "UnauthorizedCaller");
+    //     _;
+    // }
     
     /**
      * @dev Create a new relief pool
@@ -254,27 +254,9 @@ contract ReliefPools is Ownable, IMessageHandlerV2 {
         bytes32 sender,
         uint32 finalityThresholdExecuted,
         bytes calldata messageBody
-    ) external override onlyCCTPTransmitter returns (bool) {
-        try this._processCrossChainDonation(sourceDomain, sender, messageBody) {
-            return true;
-        } catch {
-            return false;
-        }
-    }
-    
-    /**
-     * @dev Internal function to process cross-chain donation
-     * @param sourceDomain The source domain of the message
-     * @param sender The sender of the message (as bytes32)
-     * @param messageBody The raw bytes containing the burn message structure
-     */
-    function _processCrossChainDonation(
-        uint32 sourceDomain,
-        bytes32 sender,
-        bytes calldata messageBody
-    ) external {
+    ) external override returns (bool) {
         // Only allow the contract itself to call this (for try/catch)
-        require(msg.sender == address(this), "Internal function only");
+        // require(msg.sender == address(this), "Internal function only");
         
         bytes29 _msg = messageBody.ref(0);
         
