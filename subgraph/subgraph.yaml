@@ -8,9 +8,9 @@ dataSources:
     name: ReliefPools
     network: base-sepolia
     source:
-      address: "0xB7BEa46AA1439F4511bE766842bc11D25F573D70"
+      address: "0xe4B5781d40a3D55717bb30fb096D5F103453a4e9"
       abi: ReliefPools
-      startBlock: 27993783
+      startBlock: 28001715
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.9
@@ -25,14 +25,14 @@ dataSources:
         - name: ReliefPools
           file: ./abis/ReliefPools.json
       eventHandlers:
-        - event: DonationMade(indexed string,indexed address,uint32,uint256,uint256,string)
+        - event: DonationMade(string,indexed address,uint32,uint256,uint256,string)
           handler: handleDonationMade
-        - event: FundsClaimed(indexed string,indexed address,indexed address,uint256,uint256,string,uint256,uint256)
+        - event: FundsClaimed(string,indexed address,indexed address,uint256,uint256,string,uint256,uint256)
           handler: handleFundsClaimed
         - event: OwnershipTransferred(indexed address,indexed address)
           handler: handleOwnershipTransferred
         - event: PoolStatusChanged(indexed string,bool)
           handler: handlePoolStatusChanged
-        - event: ReliefPoolCreated(indexed string,uint8,uint8,string,uint256)
+        - event: ReliefPoolCreated(string,uint8,uint8,string,uint256)
           handler: handleReliefPoolCreated
       file: ./src/relief-pools.ts

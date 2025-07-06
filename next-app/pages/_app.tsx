@@ -3,7 +3,7 @@ import type { AppProps } from "next/app";
 import Head from "next/head";
 import "../styles/globals.css";
 import { GraphQLProvider } from "../lib/GraphQLContext";
-import NotificationToast from "../components/NotificationToast";
+import TransactionStatusModal, { useTransactionNotifications } from "../components/TransactionStatusModal";
 
 function MyApp({ Component, pageProps }: AppProps) {
   return (
@@ -78,11 +78,26 @@ function MyApp({ Component, pageProps }: AppProps) {
       >
         <GraphQLProvider>
           <Component {...pageProps} />
-          <NotificationToast />
+          <TransactionNotifications />
         </GraphQLProvider>
       </PrivyProvider>
     </>
   );
 }
+
+// Component to handle transaction notifications
+const TransactionNotifications = () => {
+  const { notification, closeNotification } = useTransactionNotifications();
+  
+  return (
+    <TransactionStatusModal
+      isOpen={notification.isOpen}
+      onClose={closeNotification}
+      type={notification.type}
+      message={notification.message}
+      txHash={notification.txHash}
+    />
+  );
+};
 
 export default MyApp;
