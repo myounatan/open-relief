@@ -71,7 +71,7 @@ export function handlePoolStatusChanged(event: PoolStatusChangedEvent): void {
   let entity = new PoolStatusChanged(
     event.transaction.hash.concatI32(event.logIndex.toI32())
   )
-  entity.poolId = event.params.poolId
+  entity.poolId = event.params.poolId.toString()
   entity.isActive = event.params.isActive
 
   entity.blockNumber = event.block.number
