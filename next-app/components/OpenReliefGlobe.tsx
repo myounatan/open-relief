@@ -563,7 +563,7 @@ const OpenReliefGlobe: React.FC<OpenReliefGlobeProps> = ({
           <div className="flex items-center space-x-6">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
-              src="/logo.png"
+              src="/new-logo.png"
               alt="Open Relief"
               className="w-15 h-15"
               width={60}
