@@ -4,7 +4,6 @@ import { SelfAppBuilder, SelfQRcodeWrapper } from "@selfxyz/qrcode";
 import React, { useEffect, useState } from "react";
 import { DisasterZoneFeature } from "../lib/countryData";
 import { shouldUseMobileFlow } from "../lib/deviceDetection";
-import { encodePacked } from "viem";
 
 interface IdentityVerificationProps {
   isOpen: boolean;
@@ -58,7 +57,11 @@ const IdentityVerification: React.FC<IdentityVerificationProps> = ({
           userId: `${userIdentifier}`, // abi encode disasterZone.properties.id from int to bytes
           userIdType: "hex", // Using blockchain address
           version: 2,
-          userDefinedData: "0x" + Buffer.from(disasterZone.properties.id).toString('hex').padEnd(128, '0'),
+          userDefinedData:
+            "0x" +
+            Buffer.from(disasterZone.properties.id)
+              .toString("hex")
+              .padEnd(128, "0"),
           disclosures: {
             // what you want to verify from users' identity
             // minimumAge: 0,
