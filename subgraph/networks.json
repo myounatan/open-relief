@@ -1,8 +1,8 @@
 {
   "base-sepolia": {
     "ReliefPools": {
-      "address": "0xB39C048039f4cD4BE595877660a2420A2eb28d19",
-      "startBlock": 27993783
+      "address": "0x258c90420C6E641af25fb72962f358341199Bb74",
+      "startBlock": 28001715
     }
   }
 }

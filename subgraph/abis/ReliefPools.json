@@ -16,7 +16,7 @@
     "anonymous": false,
     "inputs": [
       {
-        "indexed": true,
+        "indexed": false,
         "internalType": "string",
         "name": "poolId",
         "type": "string"
@@ -59,7 +59,7 @@
     "anonymous": false,
     "inputs": [
       {
-        "indexed": true,
+        "indexed": false,
         "internalType": "string",
         "name": "poolId",
         "type": "string"
@@ -152,7 +152,7 @@
     "anonymous": false,
     "inputs": [
       {
-        "indexed": true,
+        "indexed": false,
         "internalType": "string",
         "name": "poolId",
         "type": "string"
@@ -190,24 +190,6 @@
     "name": "DOMAIN_SEPARATOR",
     "outputs": [{ "internalType": "bytes32", "name": "", "type": "bytes32" }],
     "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "VERIFICATION_MESSAGE_TYPEHASH",
-    "outputs": [{ "internalType": "bytes32", "name": "", "type": "bytes32" }],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      { "internalType": "uint32", "name": "sourceDomain", "type": "uint32" },
-      { "internalType": "bytes32", "name": "sender", "type": "bytes32" },
-      { "internalType": "bytes", "name": "messageBody", "type": "bytes" }
-    ],
-    "name": "_processCrossChainDonation",
-    "outputs": [],
-    "stateMutability": "nonpayable",
     "type": "function"
   },
   {

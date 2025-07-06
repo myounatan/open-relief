@@ -98,11 +98,6 @@ contract ReliefPools is Ownable, IMessageHandlerV2 {
     // Domain separator for EIP-712 signatures
     bytes32 public immutable DOMAIN_SEPARATOR;
     
-    // TypeHash for verification message (must match IdentityVerifier)
-    bytes32 public constant VERIFICATION_MESSAGE_TYPEHASH = keccak256(
-        "VerificationMessage(uint256 nullifier,uint256 userIdentifier,string nationality,uint256 timestamp)"
-    );
-    
     // Storage mappings
     mapping(string => ReliefPool) public reliefPools;
     mapping(string => mapping(address => Beneficiary)) public poolBeneficiaries;
@@ -114,7 +109,7 @@ contract ReliefPools is Ownable, IMessageHandlerV2 {
     
     // Events
     event ReliefPoolCreated(
-        string indexed poolId,
+        string poolId,
         DisasterTypeEnum disasterType,
         ClassificationEnum classification,
         string nationalityRequired,
@@ -122,7 +117,7 @@ contract ReliefPools is Ownable, IMessageHandlerV2 {
     );
     
     event FundsClaimed(
-        string indexed poolId,
+        string poolId,
         address indexed claimer,
         address indexed recipient,
         uint256 nullifier,
@@ -133,7 +128,7 @@ contract ReliefPools is Ownable, IMessageHandlerV2 {
     );
     
     event DonationMade(
-        string indexed poolId,
+        string poolId,
         address indexed donor,
         uint32 sourceDomain, // 6 for Base (direct donations), actual domain for cross-chain
         uint256 amount,
@@ -147,19 +142,6 @@ contract ReliefPools is Ownable, IMessageHandlerV2 {
         require(msg.sender == adminAddress, "Unauthorized: Not Admin");
         _;
     }
-    
-    // Custom errors (using revert with reason strings in 0.7.6)
-    // error InvalidPool();
-    // error PoolInactive();
-    // error InvalidSignature();
-    // error AlreadyClaimed();
-    // error NationalityMismatch(string nationality, string nationalityRequired);
-    // error InsufficientFunds();
-    // error InvalidAmount();
-    // error InvalidNationality();
-    // error InvalidRecipient();
-    // error UnauthorizedCaller();
-    // error InvalidMessageBody();
     
     constructor(
         address _adminAddress, 
@@ -177,7 +159,7 @@ contract ReliefPools is Ownable, IMessageHandlerV2 {
                 keccak256("EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)"),
                 keccak256(bytes("ReliefPools")),
                 keccak256(bytes("1")),
-                8453, // Base chain ID
+                84532, // Base chain ID
                 address(this)
             )
         );
@@ -263,13 +245,10 @@ contract ReliefPools is Ownable, IMessageHandlerV2 {
         // Validate message format
         _msg._validateBurnMessageFormat();
         
-        // Extract hook data
+        // Extract and decode hook data (inline to reduce stack depth)
         bytes29 hookDataView = _msg._getHookData();
         require(hookDataView.len() > 0, "No hook data provided");
-        bytes memory hookData = hookDataView.clone();
-        
-        // Decode hook data: poolId and location
-        (string memory poolId, string memory location) = abi.decode(hookData, (string, string));
+        (string memory poolId, string memory location) = abi.decode(hookDataView.clone(), (string, string));
         
         // Extract donation amount
         uint256 donationAmount = _msg._getAmount();
@@ -445,7 +424,7 @@ contract ReliefPools is Ownable, IMessageHandlerV2 {
     ) internal view returns (bool) {
         bytes32 structHash = keccak256(
             abi.encode(
-                VERIFICATION_MESSAGE_TYPEHASH,
+                keccak256("VerificationMessage(uint256 nullifier,uint256 userIdentifier,string nationality,uint256 timestamp)"),
                 nullifier,
                 userIdentifier,
                 keccak256(bytes(nationality)),

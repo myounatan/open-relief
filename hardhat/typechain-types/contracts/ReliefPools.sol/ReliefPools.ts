@@ -116,7 +116,6 @@ export interface ReliefPoolsInterface extends Interface {
   getFunction(
     nameOrSignature:
       | "DOMAIN_SEPARATOR"
-      | "VERIFICATION_MESSAGE_TYPEHASH"
       | "adminAddress"
       | "cctpMessageTransmitter"
       | "checkPersonClaimedFromPool"
@@ -160,10 +159,6 @@ export interface ReliefPoolsInterface extends Interface {
 
   encodeFunctionData(
     functionFragment: "DOMAIN_SEPARATOR",
-    values?: undefined
-  ): string;
-  encodeFunctionData(
-    functionFragment: "VERIFICATION_MESSAGE_TYPEHASH",
     values?: undefined
   ): string;
   encodeFunctionData(
@@ -287,10 +282,6 @@ export interface ReliefPoolsInterface extends Interface {
 
   decodeFunctionResult(
     functionFragment: "DOMAIN_SEPARATOR",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "VERIFICATION_MESSAGE_TYPEHASH",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -564,8 +555,6 @@ export interface ReliefPools extends BaseContract {
 
   DOMAIN_SEPARATOR: TypedContractMethod<[], [string], "view">;
 
-  VERIFICATION_MESSAGE_TYPEHASH: TypedContractMethod<[], [string], "view">;
-
   adminAddress: TypedContractMethod<[], [string], "view">;
 
   cctpMessageTransmitter: TypedContractMethod<[], [string], "view">;
@@ -783,9 +772,6 @@ export interface ReliefPools extends BaseContract {
 
   getFunction(
     nameOrSignature: "DOMAIN_SEPARATOR"
-  ): TypedContractMethod<[], [string], "view">;
-  getFunction(
-    nameOrSignature: "VERIFICATION_MESSAGE_TYPEHASH"
   ): TypedContractMethod<[], [string], "view">;
   getFunction(
     nameOrSignature: "adminAddress"
