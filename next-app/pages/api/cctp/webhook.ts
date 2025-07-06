@@ -8,13 +8,7 @@ import {
   keccak256,
 } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
-import {
-  arbitrumSepolia,
-  baseSepolia,
-  optimismSepolia,
-  polygonAmoy,
-  sepolia,
-} from "viem/chains";
+import { baseSepolia } from "viem/chains";
 
 const processedTransactions = new Set<string>();
 
@@ -94,27 +88,6 @@ const alchemyNetworkToDomain: any = {
   OP_SEPOLIA: 2,
   POL_AMOR: 7,
   BASE_SEPOLIA: 6,
-};
-
-const _alchemyNetworkToChain: any = {
-  ETH_SEPOLIA: sepolia,
-  ARB_SEPOLIA: arbitrumSepolia,
-  OP_SEPOLIA: optimismSepolia,
-  POL_AMOR: polygonAmoy,
-  BASE_SEPOLIA: baseSepolia,
-};
-
-const _alchemyNetworkToRPC: any = {
-  ETH_SEPOLIA:
-    "https://eth-sepolia.g.alchemy.com/v2/gnEEOpfvZaF3wgNmaaDN_7u00kUCctET",
-  ARB_SEPOLIA:
-    "https://arb-sepolia.g.alchemy.com/v2/gnEEOpfvZaF3wgNmaaDN_7u00kUCctET",
-  OP_SEPOLIA:
-    "https://opt-sepolia.g.alchemy.com/v2/gnEEOpfvZaF3wgNmaaDN_7u00kUCctET",
-  POL_AMOR:
-    "https://polygon-amoy.g.alchemy.com/v2/gnEEOpfvZaF3wgNmaaDN_7u00kUCctET",
-  BASE_SEPOLIA:
-    "https://base-sepolia.g.alchemy.com/v2/gnEEOpfvZaF3wgNmaaDN_7u00kUCctET",
 };
 
 /**
