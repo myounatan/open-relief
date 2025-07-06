@@ -3,6 +3,7 @@ import type { AppProps } from "next/app";
 import Head from "next/head";
 import "../styles/globals.css";
 import { GraphQLProvider } from "../lib/GraphQLContext";
+import NotificationToast from "../components/NotificationToast";
 
 function MyApp({ Component, pageProps }: AppProps) {
   return (
@@ -77,6 +78,7 @@ function MyApp({ Component, pageProps }: AppProps) {
       >
         <GraphQLProvider>
           <Component {...pageProps} />
+          <NotificationToast />
         </GraphQLProvider>
       </PrivyProvider>
     </>

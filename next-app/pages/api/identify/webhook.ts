@@ -1,7 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import { createWalletClient, decodeEventLog, http } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
-import { baseSepolia } from "viem/chains";
+import { pusherServer, type TransactionNotification } from "../../../lib/pusher";
 
 // Note: The reliefPoolId in the UserVerified event is already a decoded string,
 // so no hex-to-string conversion is needed in this webhook.
@@ -122,9 +122,21 @@ async function processIdentityVerification(eventData: {
 }
 
 function decodePoolId(hexString: string) {
-  const cleanHex = hexString.startsWith("0x") ? hexString.slice(2) : hexString;
-  const buffer = Buffer.from(cleanHex, "hex");
-  return buffer.toString("utf8").replace(/\0+$/, "");
+  const cleanHex = hexString.startsWith('0x') ? hexString.slice(2) : hexString;
+  const buffer = Buffer.from(cleanHex, 'hex');
+  return buffer.toString('utf8').replace(/\0+$/, '');
+}
+
+/**
+ * Send notification to UI via Pusher
+ */
+async function sendNotification(notification: TransactionNotification) {
+  try {
+    await pusherServer.trigger('relief-notifications', 'transaction-update', notification);
+    console.log('📱 Notification sent to UI:', notification.type);
+  } catch (error) {
+    console.error('❌ Failed to send notification:', error);
+  }
 }
 
 export default async function handler(
@@ -159,6 +171,8 @@ export default async function handler(
 
     // Process each log in the webhook
     for (const log of payload.event.data.block.logs) {
+      let eventData: any = null;
+      
       try {
         console.log(`✅ UserVerified event detected: ${log.transaction.hash}`);
 
@@ -171,8 +185,8 @@ export default async function handler(
         }
 
         // Decode the UserVerified event
-        const eventData = decodeUserVerifiedEvent(log);
-
+        eventData = decodeUserVerifiedEvent(log);
+        
         // Process the identity verification
         const txHash = await processIdentityVerification({
           nullifier: eventData.nullifier,
@@ -186,15 +200,27 @@ export default async function handler(
         // Mark as processed
         processedEvents.add(log.transaction.hash);
 
-        console.log(
-          `🎉 Identity verification processed successfully: ${txHash}`
-        );
+        console.log(`🎉 Identity verification processed successfully: ${txHash}`);
+
+        // Send success notification
+        await sendNotification({
+          type: 'success',
+          message: `Identity verification processed successfully!`,
+          txHash: txHash,
+          userAddress: eventData.userAddress,
+          timestamp: Date.now(),
+        });
+
       } catch (error: any) {
-        console.error(
-          `❌ Failed to process transaction ${log.transaction.hash}:`,
-          error.message
-        );
-        // Continue processing other transactions even if one fails
+        console.error(`❌ Failed to process transaction ${log.transaction.hash}:`, error.message);
+        
+        // Send error notification
+        await sendNotification({
+          type: 'error',
+          message: `Failed to process identity verification: ${error.message.split('\n')[1]}`,
+          userAddress: eventData?.userAddress || 'unknown',
+          timestamp: Date.now(),
+        });
       }
     }
 
