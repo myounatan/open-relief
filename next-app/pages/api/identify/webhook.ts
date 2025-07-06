@@ -2,6 +2,7 @@ import type { NextApiRequest, NextApiResponse } from "next";
 import { createWalletClient, decodeEventLog, http } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
 import { pusherServer, type TransactionNotification } from "../../../lib/pusher";
+import { baseSepolia } from "viem/chains";
 
 // Note: The reliefPoolId in the UserVerified event is already a decoded string,
 // so no hex-to-string conversion is needed in this webhook.
