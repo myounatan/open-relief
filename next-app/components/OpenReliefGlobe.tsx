@@ -1,12 +1,18 @@
-import NumberFlow from "@number-flow/react";
 import { useLogin, usePrivy, useWallets } from "@privy-io/react-auth";
-import Image from "next/image";
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import Globe from "react-globe.gl";
 import {
-  DISASTER_ZONES,
+  BASE_DISASTER_ZONES,
   DisasterZoneFeature,
+  getActiveDisasterZones,
   getPolygonCenter,
+  ReliefPoolData,
 } from "../lib/countryData";
 import DonationModal from "./DonationModal";
 import IdentityVerification from "./IdentityVerification";
@@ -86,59 +92,91 @@ const generateRandomLocation = () => {
   return { lat, lng };
 };
 
-// Generate sample donation history for a disaster zone
-const generateDonationHistory = (
-  zone: DisasterZoneFeature
+// Generate real donation history for a disaster zone from GraphQL data
+const generateRealDonationHistory = (
+  zone: DisasterZoneFeature,
+  donationMades: any[]
 ): DonationHistoryData[] => {
   const donations: DonationHistoryData[] = [];
-  const center = getPolygonCenter(zone);
+  const poolId = zone.properties.id;
 
-  // Sample donor cities with names
-  const donorCities = [
-    { name: "New York", lat: 40.7128, lng: -74.006 },
-    { name: "London", lat: 51.5074, lng: -0.1278 },
-    { name: "Tokyo", lat: 35.6762, lng: 139.6503 },
-    { name: "Sydney", lat: -33.8688, lng: 151.2093 },
-    { name: "São Paulo", lat: -23.5505, lng: -46.6333 },
-    { name: "Dubai", lat: 25.2048, lng: 55.2708 },
-    { name: "Singapore", lat: 1.3521, lng: 103.8198 },
-  ];
+  // Filter donations for this specific pool
+  const poolDonations = donationMades.filter(
+    (donation) => donation.poolId === poolId
+  );
 
-  for (let i = 0; i < 5; i++) {
-    const cityIndex = Math.floor(Math.random() * donorCities.length);
-    const randomCity = donorCities[cityIndex]!; // Non-null assertion since array is populated
-    const amount = Math.floor(Math.random() * 5000) + 100; // $100-$5000
-    const currencies = ["USD", "EUR", "GBP", "JPY"];
-    const currencyIndex = Math.floor(Math.random() * currencies.length);
-    const currency = currencies[currencyIndex]!; // Non-null assertion since array is populated
+  poolDonations.forEach((donation) => {
+    // Parse location (format: "lat:lng")
+    const locationParts = donation.location.split(":");
+    const lat = parseFloat(locationParts[0]) || 0;
+    const lng = parseFloat(locationParts[1]) || 0;
 
-    // Generate timestamp within last 30 days
-    const daysAgo = Math.floor(Math.random() * 30);
-    const timestamp = new Date();
-    timestamp.setDate(timestamp.getDate() - daysAgo);
+    // Use raw amount without conversion
+    const amount = parseInt(donation.amount);
+
+    // Convert timestamp to Date
+    const timestamp = new Date(parseInt(donation.timestamp) * 1000);
+
+    // Get zone center for end coordinates
+    const center = getPolygonCenter(zone);
 
     donations.push({
-      id: `donation-${zone.properties.name}-${i}`,
-      startLat: randomCity.lat,
-      startLng: randomCity.lng,
+      id: donation.id,
+      startLat: lat,
+      startLng: lng,
       endLat: center[1],
       endLng: center[0],
       amount,
-      currency,
+      currency: "USDC",
       timestamp,
-      donorLocation: randomCity.name,
-      isHighlighted: false, // Keep for interface compatibility
+      donorLocation: `${lat.toFixed(4)}, ${lng.toFixed(4)}`,
+      isHighlighted: false,
     });
-  }
+  });
 
   return donations;
+};
+
+// Calculate real zone metrics from GraphQL data
+const calculateZoneMetrics = (
+  zone: DisasterZoneFeature,
+  donationMades: any[],
+  fundsClaimeds: any[]
+): { donated: number; claimed: number; donors: number } => {
+  const poolId = zone.properties.id;
+
+  // Filter data for this specific pool
+  const poolDonations = donationMades.filter(
+    (donation) => donation.poolId === poolId
+  );
+  const poolClaims = fundsClaimeds.filter((claim) => claim.poolId === poolId);
+
+  // Calculate totals - show raw amounts without conversion
+  const totalDonated = poolDonations.reduce((sum, donation) => {
+    return sum + parseInt(donation.amount);
+  }, 0);
+
+  const totalClaimed = poolClaims.reduce((sum, claim) => {
+    return sum + parseInt(claim.amount);
+  }, 0);
+
+  // Count unique donors
+  const uniqueDonors = new Set(poolDonations.map((donation) => donation.donor))
+    .size;
+
+  return {
+    donated: totalDonated,
+    claimed: totalClaimed,
+    donors: uniqueDonors,
+  };
 };
 
 // Generate a donation arc from random location to disaster zone
 const generateDonationArc = (
   startLat?: number,
   startLng?: number,
-  targetZone?: DisasterZoneFeature
+  targetZone?: DisasterZoneFeature,
+  activeZones?: DisasterZoneFeature[]
 ): ArcData => {
   // Use provided coordinates or generate random ones
   const start =
@@ -146,10 +184,13 @@ const generateDonationArc = (
       ? { lat: startLat, lng: startLng }
       : generateRandomLocation();
 
-  // Use provided zone or pick random one
+  // Use provided zone or pick random one from active zones
+  const availableZones = activeZones || [];
   const zone =
     targetZone ||
-    DISASTER_ZONES[Math.floor(Math.random() * DISASTER_ZONES.length)];
+    (availableZones.length > 0
+      ? availableZones[Math.floor(Math.random() * availableZones.length)]
+      : null);
 
   // Ensure we have a valid zone
   if (!zone) {
@@ -193,7 +234,21 @@ interface PopupData {
   y: number;
 }
 
-const OpenReliefGlobe: React.FC = () => {
+interface OpenReliefGlobeProps {
+  reliefPools: ReliefPoolData[];
+  loading?: boolean;
+  error?: string | null;
+  donationMades?: any[];
+  fundsClaimeds?: any[];
+}
+
+const OpenReliefGlobe: React.FC<OpenReliefGlobeProps> = ({
+  reliefPools,
+  loading = false,
+  error = null,
+  donationMades = [],
+  fundsClaimeds = [],
+}) => {
   const globeRef = useRef<any>();
   const { authenticated } = usePrivy();
   const arcCleanupTimers = useRef<Map<string, NodeJS.Timeout>>(new Map());
@@ -222,6 +277,38 @@ const OpenReliefGlobe: React.FC = () => {
   >({});
   const { login } = useLogin();
   const { wallets } = useWallets();
+
+  // Memoize active disaster zones to prevent infinite loops
+  const activeDisasterZones = useMemo(() => {
+    // Handle loading and error states
+    if (loading) {
+      console.log("📍 GraphQL data loading, showing mock disaster zones");
+      return BASE_DISASTER_ZONES;
+    }
+
+    if (error) {
+      console.error("📍 GraphQL error, showing mock disaster zones:", error);
+      return BASE_DISASTER_ZONES;
+    }
+
+    // Handle empty or invalid relief pools
+    if (!reliefPools || reliefPools.length === 0) {
+      console.log("📍 No relief pools provided, showing mock disaster zones");
+      return BASE_DISASTER_ZONES;
+    }
+
+    const zones = getActiveDisasterZones(reliefPools);
+
+    // If no active zones are found, return mock data for demonstration
+    if (zones.length === 0) {
+      console.log(
+        "📍 No active relief pools mapped to zones, showing mock disaster zones"
+      );
+      return BASE_DISASTER_ZONES;
+    }
+
+    return zones;
+  }, [reliefPools, loading, error]);
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -277,15 +364,16 @@ const OpenReliefGlobe: React.FC = () => {
       string,
       { donated: number; claimed: number; donors: number }
     > = {};
-    DISASTER_ZONES.forEach((zone) => {
-      initialMetrics[zone.properties.name] = {
-        donated: Math.floor(Math.random() * 500000) + 50000, // $50K-$550K
-        claimed: Math.floor(Math.random() * 300000) + 20000, // $20K-$320K
-        donors: Math.floor(Math.random() * 2000) + 100, // 100-2100 donors
-      };
+
+    activeDisasterZones.forEach((zone) => {
+      initialMetrics[zone.properties.name] = calculateZoneMetrics(
+        zone,
+        donationMades,
+        fundsClaimeds
+      );
     });
     setZoneMetrics(initialMetrics);
-  }, []);
+  }, [activeDisasterZones, donationMades, fundsClaimeds]);
 
   // Function to remove an arc after animation completes
   const removeArc = (arcId: string) => {
@@ -311,7 +399,12 @@ const OpenReliefGlobe: React.FC = () => {
       startLng?: number,
       targetZone?: DisasterZoneFeature
     ) => {
-      const newArc = generateDonationArc(startLat, startLng, targetZone);
+      const newArc = generateDonationArc(
+        startLat,
+        startLng,
+        targetZone,
+        activeDisasterZones
+      );
 
       // Check if this arc already exists (prevent duplicates)
       if (!arcIds.has(newArc.id)) {
@@ -357,7 +450,7 @@ const OpenReliefGlobe: React.FC = () => {
         arcCleanupTimers.current.set(newArc.id, cleanupTimer);
       }
     },
-    [arcIds]
+    [arcIds, activeDisasterZones]
   );
 
   // Auto-generate donations every few seconds
@@ -372,29 +465,7 @@ const OpenReliefGlobe: React.FC = () => {
           setTimeout(() => {
             simulateDonation();
 
-            // Update random zone metrics
-            if (Object.keys(zoneMetrics).length > 0) {
-              const zoneNames = Object.keys(zoneMetrics);
-              const zoneName =
-                zoneNames[Math.floor(Math.random() * zoneNames.length)];
-              const donationAmount = Math.floor(Math.random() * 5000) + 100;
-
-              if (zoneName && zoneMetrics[zoneName]) {
-                setZoneMetrics((prev) => {
-                  const currentZone = prev[zoneName];
-                  if (!currentZone) return prev;
-
-                  return {
-                    ...prev,
-                    [zoneName]: {
-                      donated: currentZone.donated + donationAmount,
-                      claimed: currentZone.claimed,
-                      donors: currentZone.donors + 1,
-                    },
-                  };
-                });
-              }
-            }
+            // Zone metrics are now calculated from real GraphQL data only
           }, i * 200);
         }
       },
@@ -420,7 +491,10 @@ const OpenReliefGlobe: React.FC = () => {
           zone.properties?.name
         );
         setCurrentHoveredZone(zone);
-        const donationHistory = generateDonationHistory(zone);
+        const donationHistory = generateRealDonationHistory(
+          zone,
+          donationMades
+        );
         setDonationHistoryArcs(donationHistory);
       }
     }
@@ -487,12 +561,13 @@ const OpenReliefGlobe: React.FC = () => {
       <div className="absolute top-0 left-0 right-0 z-10 flex justify-center pt-9">
         <div className="bg-slate-900/80 backdrop-blur-sm rounded-2xl px-12 py-6 border border-slate-600">
           <div className="flex items-center space-x-6">
-            <Image
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
               src="/logo.png"
               alt="Open Relief"
+              className="w-15 h-15"
               width={60}
               height={60}
-              className="w-15 h-15"
             />
             <div>
               <h1 className="text-3xl font-bold text-white">Open Relief</h1>
@@ -515,7 +590,7 @@ const OpenReliefGlobe: React.FC = () => {
         atmosphereColor="rgba(100, 116, 139, 0.1)"
         atmosphereAltitude={0.1}
         // Disaster zones as GeoJSON features
-        polygonsData={DISASTER_ZONES}
+        polygonsData={activeDisasterZones}
         polygonCapColor={(d: any) => {
           const hexColor = d.properties?.color;
           if (hexColor && hexColor.startsWith("#")) {
@@ -540,6 +615,13 @@ const OpenReliefGlobe: React.FC = () => {
         polygonAltitude={(d: any) => d.properties?.altitude || 0.03}
         polygonLabel={(d: any) => {
           const zoneName = d.properties?.name || "Unknown";
+          const reliefPool = d.properties?.reliefPool;
+          let allocatedFunds = null;
+
+          if (reliefPool?.allocatedFundsPerPerson) {
+            // Use raw amount without conversion
+            allocatedFunds = reliefPool.allocatedFundsPerPerson;
+          }
 
           return `
             <div style="
@@ -558,13 +640,20 @@ const OpenReliefGlobe: React.FC = () => {
               <div style="font-size: 13px; color: #cbd5e1; margin-bottom: 8px;">
                 ${d.properties?.description || "No description"}
               </div>
+              ${
+                allocatedFunds
+                  ? `
+              <div style="font-size: 12px; color: #22c55e; margin-bottom: 8px; font-weight: 500;">
+                💰 ${allocatedFunds} USDC per person
+              </div>
+              `
+                  : ""
+              }
               <div style="margin-bottom: 8px; font-size: 11px; color: #cbd5e1;">
                 Click to view more information, donate, or claim aid.
               </div>
               <div style="font-size: 11px; color: #ef4444;">
-                ${d.properties?.disasterType || "Unknown"} - ${
-                  d.properties?.severity || "Unknown"
-                } severity
+                ${d.properties?.disasterType || "Unknown"} - ${d.properties?.severity || "Unknown"} severity
               </div>
             </div>
           `;
@@ -586,7 +675,10 @@ const OpenReliefGlobe: React.FC = () => {
               setHoveredDonationId(null);
 
               setCurrentHoveredZone(zone);
-              const donationHistory = generateDonationHistory(zone);
+              const donationHistory = generateRealDonationHistory(
+                zone,
+                donationMades
+              );
               setDonationHistoryArcs(donationHistory);
             }
           } else if (!polygon && currentHoveredZone && !popup) {
@@ -680,6 +772,26 @@ const OpenReliefGlobe: React.FC = () => {
               {popup.zone.properties.severity} severity
             </div>
 
+            {/* Allocated Funds Per Person */}
+            {(() => {
+              const reliefPool = popup.zone.properties.reliefPool;
+              if (!reliefPool?.allocatedFundsPerPerson) return null;
+
+              // Use raw amount without conversion
+              const allocatedFunds = reliefPool.allocatedFundsPerPerson;
+
+              return (
+                <div className="bg-green-900/30 rounded p-3 mb-4">
+                  <div className="text-xs text-green-400 mb-1">
+                    Aid Allocation
+                  </div>
+                  <div className="text-lg font-bold text-green-300">
+                    {allocatedFunds} USDC per person
+                  </div>
+                </div>
+              );
+            })()}
+
             {/* Zone Metrics */}
             {(() => {
               const currentMetrics = zoneMetrics[popup.zone.properties.name];
@@ -690,19 +802,19 @@ const OpenReliefGlobe: React.FC = () => {
                   <div className="bg-green-900/30 rounded p-2 text-center">
                     <div className="text-xs text-green-400">Donated</div>
                     <div className="text-sm font-bold text-green-300">
-                      $<NumberFlow value={currentMetrics.donated} />
+                      {currentMetrics.donated.toLocaleString()}
                     </div>
                   </div>
                   <div className="bg-blue-900/30 rounded p-2 text-center">
                     <div className="text-xs text-blue-400">Claimed</div>
                     <div className="text-sm font-bold text-blue-300">
-                      $<NumberFlow value={currentMetrics.claimed} />
+                      {currentMetrics.claimed.toLocaleString()}
                     </div>
                   </div>
                   <div className="bg-orange-900/30 rounded p-2 text-center">
                     <div className="text-xs text-orange-400">Donors</div>
                     <div className="text-sm font-bold text-orange-300">
-                      <NumberFlow value={currentMetrics.donors} />
+                      {currentMetrics.donors.toLocaleString()}
                     </div>
                   </div>
                 </div>

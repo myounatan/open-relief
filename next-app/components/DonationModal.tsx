@@ -1,8 +1,20 @@
 import { useWallets } from "@privy-io/react-auth";
+import { ethers } from "ethers";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { CCTPV2Service, SupportedChain } from "../lib/cctpV2Service";
 import { circleGasService } from "../lib/circleGasService";
 import { DisasterZoneFeature } from "../lib/countryData";
+import { useGraphQLData } from "../lib/GraphQLContext";
+
+// Add contract ABI for the donate function
+const RELIEF_POOLS_ABI = [
+  "function donate(string memory poolId, uint256 amount, string memory location) external",
+  "function approve(address spender, uint256 amount) external returns (bool)",
+];
+
+// Contract addresses for Base Sepolia
+const DONATION_POOL_ADDRESS = process.env.NEXT_PUBLIC_POOL_CONTRACT_ADDRESS!;
+const BASE_SEPOLIA_USDC = "0x036CbD53842c5426634e7929541eC2318f3dCF7e";
 
 interface DonationModalProps {
   isOpen: boolean;
@@ -29,6 +41,7 @@ const DonationModal: React.FC<DonationModalProps> = ({
   disasterZone,
 }) => {
   const { wallets } = useWallets();
+  const { refetch } = useGraphQLData();
   const [selectedChain, setSelectedChain] = useState<SupportedChain>("sepolia");
   const [amount, setAmount] = useState("");
   const [balances, setBalances] = useState<Record<string, string>>({});
@@ -65,6 +78,116 @@ const DonationModal: React.FC<DonationModalProps> = ({
     return circleGasService.isGaslessSupported(chainId);
   };
 
+  // Get user's geolocation
+  const getUserLocation = useCallback((): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      if (!navigator.geolocation) {
+        reject(new Error("Geolocation is not supported by this browser"));
+        return;
+      }
+
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const lat = position.coords.latitude;
+          const lng = position.coords.longitude;
+          const locationString = `${lat.toFixed(6)}:${lng.toFixed(6)}`;
+          resolve(locationString);
+        },
+        (error) => {
+          console.warn("Geolocation error:", error);
+          // Fallback to empty string if geolocation fails
+          resolve("");
+        },
+        { timeout: 10000, enableHighAccuracy: true }
+      );
+    });
+  }, []);
+
+  // Check if user is on Base network and selected Base USDC
+  const isDirectBaseTransaction = useCallback(() => {
+    return selectedChain === "baseSepolia" && wallets[0];
+  }, [selectedChain, wallets]);
+
+  // Direct donation to Base network smart contract
+  const donateDirectToBase = useCallback(async () => {
+    if (!wallets[0] || !amount) return;
+
+    const wallet = wallets[0];
+    const poolId = disasterZone.properties.id;
+    const amountWei = ethers.parseUnits(amount, 6); // USDC has 6 decimals
+    const approvalAmount = ethers.parseUnits("1000000", 6); // Approve 1M USDC to be safe
+
+    try {
+      // Get user location
+      const location = await getUserLocation();
+      console.log("📍 User location:", location);
+
+      // Get ethereum provider from wallet
+      const provider = await wallet.getEthereumProvider();
+      const ethersProvider = new ethers.BrowserProvider(provider);
+      const signer = await ethersProvider.getSigner();
+
+      console.log("💰 Donation details:", {
+        poolId,
+        amount,
+        amountWei: amountWei.toString(),
+        donationPoolAddress: DONATION_POOL_ADDRESS,
+        usdcAddress: BASE_SEPOLIA_USDC,
+        userAddress: wallet.address,
+      });
+
+      // Step 1: Approve USDC
+      setCurrentStep("approving");
+      console.log("🔐 Starting USDC approval...");
+
+      const usdcContract = new ethers.Contract(
+        BASE_SEPOLIA_USDC,
+        RELIEF_POOLS_ABI,
+        signer
+      );
+      const approveTx = await (usdcContract as any).approve(
+        DONATION_POOL_ADDRESS,
+        approvalAmount
+      );
+
+      console.log("⏳ Waiting for approval transaction:", approveTx.hash);
+      const approvalReceipt = await approveTx.wait();
+      console.log("✅ Approval confirmed:", approvalReceipt.hash);
+
+      // Step 2: Make donation
+      setCurrentStep("burning");
+      console.log("🎯 Starting donation transaction...");
+
+      const reliefPoolsContract = new ethers.Contract(
+        DONATION_POOL_ADDRESS,
+        RELIEF_POOLS_ABI,
+        signer
+      );
+      const donateTx = await (reliefPoolsContract as any).donate(
+        poolId,
+        amountWei,
+        location
+      );
+
+      console.log("⏳ Waiting for donation transaction:", donateTx.hash);
+      const receipt = await donateTx.wait();
+      console.log("✅ Donation confirmed:", receipt.hash);
+
+      setTxHash(receipt.hash);
+      setCurrentStep("complete");
+
+      // Refetch GraphQL data
+      setTimeout(() => {
+        refetch();
+      }, 2000); // Wait 2 seconds for blockchain to update
+
+      return receipt.hash;
+    } catch (error) {
+      console.error("Direct donation error:", error);
+      throw error;
+    }
+  }, [wallets, amount, disasterZone, getUserLocation, refetch]);
+
   const handleDonation = async () => {
     if (!wallets[0] || !amount) return;
 
@@ -73,6 +196,15 @@ const DonationModal: React.FC<DonationModalProps> = ({
     setWasGasSponsored(false);
 
     try {
+      // Check if this is a direct Base transaction
+      if (isDirectBaseTransaction()) {
+        await donateDirectToBase();
+        // Refresh balances
+        await fetchBalances();
+        return;
+      }
+
+      // Otherwise, use CCTP for cross-chain donations
       const privyWallet = wallets[0];
       const poolId = disasterZone.properties.id; // Use zone ID as pool ID
 
@@ -106,7 +238,7 @@ const DonationModal: React.FC<DonationModalProps> = ({
       setCurrentStep("waiting");
       const attestation = await cctpService.retrieveAttestation(
         burnTx,
-        selectedChain,
+        selectedChain
       );
       console.log("Attestation received:", attestation);
 
@@ -115,6 +247,11 @@ const DonationModal: React.FC<DonationModalProps> = ({
 
       // Refresh balances
       await fetchBalances();
+
+      // Refetch GraphQL data for CCTP transactions too
+      setTimeout(() => {
+        refetch();
+      }, 3000); // Wait 3 seconds for cross-chain to complete
     } catch (error: unknown) {
       console.error("Donation error:", error);
       const errorMessage =

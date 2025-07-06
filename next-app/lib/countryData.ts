@@ -10,11 +10,56 @@ export interface CountryData {
   urgency: string;
 }
 
+// Relief pool data from GraphQL
+export interface ReliefPoolData {
+  id: string;
+  poolId: string;
+  disasterType: number;
+  classification: number;
+  nationalityRequired: string;
+  allocatedFundsPerPerson: string;
+  blockNumber: string;
+  blockTimestamp: string;
+  transactionHash: string;
+}
+
+// Disaster type enum mapping (from smart contract)
+export enum DisasterTypeEnum {
+  Earthquake = 0,
+  Flood = 1,
+  Wildfire = 2,
+  Warzone = 3,
+}
+
+// Function to get disaster zone ID from relief pool data
+export const getDisasterZoneId = (
+  reliefPool: ReliefPoolData
+): string | null => {
+  // The poolId directly matches our zone IDs
+  return reliefPool.poolId;
+};
+
+// Function to get disaster type string from enum
+export const getDisasterTypeString = (disasterType: number): string => {
+  switch (disasterType) {
+    case DisasterTypeEnum.Earthquake:
+      return "earthquake";
+    case DisasterTypeEnum.Flood:
+      return "flood";
+    case DisasterTypeEnum.Wildfire:
+      return "fire";
+    case DisasterTypeEnum.Warzone:
+      return "war";
+    default:
+      return "unknown";
+  }
+};
+
 // GeoJSON Feature structure for disaster zones
 export interface DisasterZoneFeature {
   type: "Feature";
   properties: {
-    id: string; 
+    id: string;
     name: string;
     description: string;
     disasterType:
@@ -27,6 +72,9 @@ export interface DisasterZoneFeature {
     severity: "high" | "medium" | "low";
     color: string;
     altitude: number;
+    // Add blockchain data
+    poolId?: string;
+    reliefPool?: ReliefPoolData;
   };
   geometry: {
     type: "Polygon";
@@ -37,7 +85,7 @@ export interface DisasterZoneFeature {
 // Color assignment function based on disaster type and severity
 export const getDisasterColor = (
   type: "earthquake" | "flood" | "fire" | "typhoon" | "hurricane" | "war",
-  severity: "high" | "medium" | "low",
+  severity: "high" | "medium" | "low"
 ): string => {
   switch (type) {
     case "war":
@@ -58,7 +106,7 @@ export const getDisasterColor = (
         case "medium":
           return "#f97316"; // Medium orange
         case "low":
-          return "#fb923c"; // Light orange
+          return "#fb923c"; // Light orange-yellow
         default:
           return "#ea580c";
       }
@@ -76,13 +124,13 @@ export const getDisasterColor = (
     case "fire":
       switch (severity) {
         case "high":
-          return "#b91c1c"; // Dark red-orange
+          return "#ea580c"; // Dark orange
         case "medium":
-          return "#dc2626"; // Medium red-orange
+          return "#f97316"; // Medium orange
         case "low":
-          return "#f59e0b"; // Light orange-yellow
+          return "#fb923c"; // Light orange-yellow
         default:
-          return "#b91c1c";
+          return "#ea580c";
       }
     case "typhoon":
     case "hurricane":
@@ -101,8 +149,8 @@ export const getDisasterColor = (
   }
 };
 
-// Disaster zones with accurate coordinates from countries.geojson
-export const DISASTER_ZONES: DisasterZoneFeature[] = [
+// Base disaster zones with accurate coordinates
+export const BASE_DISASTER_ZONES: DisasterZoneFeature[] = [
   {
     type: "Feature",
     properties: {
@@ -191,10 +239,10 @@ export const DISASTER_ZONES: DisasterZoneFeature[] = [
     properties: {
       id: "turkey",
       name: "Turkey (Southern Region)",
-      description: "Earthquake Emergency Aid",
-      disasterType: "earthquake",
+      description: "Flood Emergency Aid",
+      disasterType: "flood",
       severity: "high",
-      color: getDisasterColor("earthquake", "high"),
+      color: getDisasterColor("flood", "high"),
       altitude: 0.03,
     },
     geometry: {
@@ -370,11 +418,145 @@ export const DISASTER_ZONES: DisasterZoneFeature[] = [
       ],
     },
   },
+  {
+    type: "Feature",
+    properties: {
+      id: "france",
+      name: "France",
+      description: "Wildfire Emergency Relief",
+      disasterType: "fire",
+      severity: "high",
+      color: getDisasterColor("fire", "high"),
+      altitude: 0.03,
+    },
+    geometry: {
+      type: "Polygon",
+      coordinates: [
+        [
+          [2.513573, 51.148506],
+          [2.658422, 50.796848],
+          [3.123252, 50.780363],
+          [3.588184, 50.378992],
+          [4.286023, 49.907497],
+          [4.799222, 49.985373],
+          [5.674052, 49.529484],
+          [5.897759, 49.442667],
+          [6.18632, 49.463803],
+          [6.65823, 49.201958],
+          [8.099279, 49.017784],
+          [7.593676, 48.333019],
+          [7.466759, 47.620582],
+          [7.192202, 47.449766],
+          [6.736571, 47.541801],
+          [6.768714, 47.287708],
+          [6.037389, 46.725779],
+          [6.022609, 46.27299],
+          [6.5001, 46.429673],
+          [6.843593, 45.991147],
+          [6.802355, 45.70858],
+          [7.096652, 45.333099],
+          [6.749955, 45.028518],
+          [7.007562, 44.254767],
+          [7.549596, 44.127901],
+          [7.435185, 43.693845],
+          [6.529245, 43.128892],
+          [4.556963, 43.399651],
+          [3.100411, 43.075201],
+          [2.985999, 42.473015],
+          [1.826793, 42.343385],
+          [0.701591, 42.795734],
+          [0.338047, 42.579546],
+          [-1.502771, 43.034014],
+          [-1.901351, 43.422802],
+          [-1.384225, 44.02261],
+          [-1.193798, 46.014918],
+          [-2.225724, 47.064363],
+          [-2.963276, 47.570327],
+          [-4.491555, 47.954954],
+          [-4.59235, 48.68416],
+          [-3.295814, 48.901692],
+          [-1.616511, 48.644421],
+          [-1.933494, 49.776342],
+          [-0.989469, 49.347376],
+          [1.338761, 50.127173],
+          [1.639001, 50.946606],
+          [2.513573, 51.148506],
+        ],
+      ],
+    },
+  },
 ];
+
+// Function to get active disaster zones based on relief pool data
+export const getActiveDisasterZones = (
+  reliefPools: ReliefPoolData[]
+): DisasterZoneFeature[] => {
+  if (!reliefPools || reliefPools.length === 0) {
+    console.log("📍 No relief pools provided");
+    return [];
+  }
+
+  const activeZones: DisasterZoneFeature[] = [];
+  let unmatchedPools = 0;
+
+  reliefPools.forEach((pool) => {
+    const zoneId = getDisasterZoneId(pool);
+    if (!zoneId) {
+      unmatchedPools++;
+      console.warn("⚠️ Relief pool could not be mapped to a zone:", {
+        poolId: pool.poolId,
+        disasterType: pool.disasterType,
+        nationality: pool.nationalityRequired,
+      });
+      return;
+    }
+
+    const baseZone = BASE_DISASTER_ZONES.find(
+      (zone) => zone.properties.id === zoneId
+    );
+    if (!baseZone) {
+      unmatchedPools++;
+      console.warn("⚠️ Zone not found in BASE_DISASTER_ZONES:", zoneId);
+      return;
+    }
+
+    // Create a copy of the zone with relief pool data
+    const activeZone: DisasterZoneFeature = {
+      ...baseZone,
+      properties: {
+        ...baseZone.properties,
+        // Update disaster type based on blockchain data
+        disasterType: getDisasterTypeString(pool.disasterType) as any,
+        color: getDisasterColor(
+          getDisasterTypeString(pool.disasterType) as any,
+          "high"
+        ),
+        poolId: pool.poolId,
+        reliefPool: pool,
+      },
+    };
+
+    activeZones.push(activeZone);
+  });
+
+  if (unmatchedPools > 0) {
+    console.log(
+      `📍 ${unmatchedPools} relief pools could not be mapped to zones`
+    );
+  }
+
+  console.log(
+    `📍 Active disaster zones: ${activeZones.length}/${reliefPools.length} pools mapped`
+  );
+  return activeZones;
+};
+
+// Backward compatibility - this will be replaced by getActiveDisasterZones
+export const DISASTER_ZONES = BASE_DISASTER_ZONES;
 
 // Helper function to get center coordinates from a polygon
 export const getPolygonCenter = (
-  feature: DisasterZoneFeature,
+  feature: DisasterZoneFeature
 ): [number, number] => {
   const coords = feature.geometry.coordinates[0];
   if (!coords || coords.length === 0) {

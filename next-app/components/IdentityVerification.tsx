@@ -4,6 +4,7 @@ import { SelfAppBuilder, SelfQRcodeWrapper } from "@selfxyz/qrcode";
 import React, { useEffect, useState } from "react";
 import { DisasterZoneFeature } from "../lib/countryData";
 import { shouldUseMobileFlow } from "../lib/deviceDetection";
+import { useGraphQLData } from "../lib/GraphQLContext";
 
 interface IdentityVerificationProps {
   isOpen: boolean;
@@ -19,6 +20,7 @@ const IdentityVerification: React.FC<IdentityVerificationProps> = ({
   disasterZone,
 }) => {
   const { wallets } = useWallets();
+  const { refetch } = useGraphQLData();
   const [userId, setUserId] = useState<string>("");
   const [selfApp, setSelfApp] = useState<any>(null);
   const [deeplink, setDeeplink] = useState<string>("");
@@ -138,6 +140,11 @@ const IdentityVerification: React.FC<IdentityVerificationProps> = ({
       JSON.stringify(result, null, 2)
     );
     setVerificationStatus("success");
+
+    // Refetch GraphQL data to get updated relief pools, donations, and claims
+    console.log("🔄 Refetching GraphQL data after verification success...");
+    refetch();
+
     // Pass the verification result from Self
     onVerificationSuccess({
       userId,
@@ -159,7 +166,7 @@ const IdentityVerification: React.FC<IdentityVerificationProps> = ({
         console.log(
           "📱 Mobile deeplink verification timeout - simulating success"
         );
-        // Mock successful verification for demo
+        // Mock successful verification for demo - this will now trigger refetch
         handleVerificationSuccess();
       }, 5000);
     }
@@ -253,6 +260,7 @@ const IdentityVerification: React.FC<IdentityVerificationProps> = ({
                       selfApp={selfApp}
                       onSuccess={() => {
                         console.log("📱 QR Code verification completed");
+                        // Refetch GraphQL data when QR verification succeeds
                         handleVerificationSuccess();
                       }}
                       onError={(error) => {

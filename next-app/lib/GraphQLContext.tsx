@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import React, { createContext, useContext, useEffect, useState } from "react";
 
 // Define the types based on the schema
 interface DonationMade {
@@ -119,17 +119,19 @@ const ALL_DATA_QUERY = `
   }
 `;
 
-export const GraphQLProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+export const GraphQLProvider: React.FC<{ children: React.ReactNode }> = ({
+  children,
+}) => {
   const [data, setData] = useState<GraphQLData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   const fetchData = async () => {
     try {
-      const response = await fetch(process.env.NEXT_PUBLIC_GRAPH_URL || '', {
-        method: 'POST',
+      const response = await fetch(process.env.NEXT_PUBLIC_GRAPH_URL || "", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({
           query: ALL_DATA_QUERY,
@@ -141,7 +143,7 @@ export const GraphQLProvider: React.FC<{ children: React.ReactNode }> = ({ child
       }
 
       const result = await response.json();
-      
+
       if (result.errors) {
         throw new Error(result.errors[0].message);
       }
@@ -149,8 +151,10 @@ export const GraphQLProvider: React.FC<{ children: React.ReactNode }> = ({ child
       setData(result.data);
       setError(null);
     } catch (err) {
-      console.error('GraphQL fetch error:', err);
-      setError(err instanceof Error ? err.message : 'An unknown error occurred');
+      console.error("GraphQL fetch error:", err);
+      setError(
+        err instanceof Error ? err.message : "An unknown error occurred"
+      );
     } finally {
       setLoading(false);
     }
@@ -165,11 +169,9 @@ export const GraphQLProvider: React.FC<{ children: React.ReactNode }> = ({ child
     // Initial fetch
     fetchData();
 
-    // Set up polling every 10 seconds
-    const interval = setInterval(fetchData, 10000);
-
-    // Cleanup interval on unmount
-    return () => clearInterval(interval);
+    // Remove periodic polling - we'll refetch manually on QR code success
+    // const interval = setInterval(fetchData, 10000);
+    // return () => clearInterval(interval);
   }, []);
 
   const contextValue: GraphQLContextType = {
@@ -190,9 +192,9 @@ export const GraphQLProvider: React.FC<{ children: React.ReactNode }> = ({ child
 export const useGraphQLData = () => {
   const context = useContext(GraphQLContext);
   if (context === undefined) {
-    throw new Error('useGraphQLData must be used within a GraphQLProvider');
+    throw new Error("useGraphQLData must be used within a GraphQLProvider");
   }
   return context;
 };
 
-export default GraphQLProvider; 
+export default GraphQLProvider;

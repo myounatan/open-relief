@@ -5,6 +5,10 @@ import Head from "next/head";
 import AccountButton from "../components/AccountButton";
 import HeroSection from "../components/HeroSection";
 import { useGraphQLData } from "../lib/GraphQLContext";
+import {
+  BASE_DISASTER_ZONES,
+  getActiveDisasterZones,
+} from "../lib/countryData";
 
 // Dynamically import OpenReliefGlobe to avoid SSR issues
 const OpenReliefGlobe = dynamic(() => import("../components/OpenReliefGlobe"), {
@@ -53,6 +57,18 @@ interface HomePageProps {
 export default function HomePage({ authenticated, userId }: HomePageProps) {
   const { data, loading, error } = useGraphQLData();
 
+  console.log("🔍 GraphQL data:", data);
+
+  // Convert GraphQL data to active disaster zones
+  const activeZones = data?.reliefPoolCreateds
+    ? getActiveDisasterZones(data.reliefPoolCreateds)
+    : [];
+
+  // Use mock data if no active zones are found
+  const zonesToDisplay =
+    activeZones.length > 0 ? activeZones : BASE_DISASTER_ZONES;
+  const isUsingMockData = activeZones.length === 0;
+
   return (
     <>
       <Head>
@@ -71,7 +87,13 @@ export default function HomePage({ authenticated, userId }: HomePageProps) {
         <AccountButton />
 
         {/* Globe Component */}
-        <OpenReliefGlobe />
+        <OpenReliefGlobe
+          reliefPools={data?.reliefPoolCreateds || []}
+          loading={loading}
+          error={error}
+          donationMades={data?.donationMades || []}
+          fundsClaimeds={data?.fundsClaimeds || []}
+        />
 
         {/* Bottom Info Overlay */}
         <div className="absolute bottom-0 left-0 right-0 z-10 bg-gradient-to-t from-slate-900/90 to-transparent p-8">
@@ -80,30 +102,24 @@ export default function HomePage({ authenticated, userId }: HomePageProps) {
               <p className="text-sm text-slate-400 mb-2">
                 Click on highlighted disaster zones to donate or claim aid
               </p>
-              <p className="text-sm text-slate-400 mb-3">
-                Powered by Circle&apos;s Cross-Chain Transfer Protocol (CCTP V2)
-                for instant USDC transfers • Gas fees sponsored by Circle Gas
-                Station
-              </p>
+
+              {isUsingMockData && (
+                <p className="text-xs text-amber-400 mb-3">
+                  ⚠️ Demo Mode: Showing sample disaster zones. Connect to live
+                  data via blockchain.
+                </p>
+              )}
               <div className="flex justify-center space-x-4 text-sm text-slate-400">
                 <div className="flex items-center">
                   <div className="w-3 h-3 bg-red-600 rounded-full mr-1"></div>
                   War
                 </div>
                 <div className="flex items-center">
-                  <div className="w-3 h-3 bg-orange-600 rounded-full mr-1"></div>
-                  Earthquake
-                </div>
-                <div className="flex items-center">
-                  <div className="w-3 h-3 bg-purple-600 rounded-full mr-1"></div>
-                  Typhoon
-                </div>
-                <div className="flex items-center">
-                  <div className="w-3 h-3 bg-blue-600 rounded-full mr-1"></div>
+                  <div className="w-3 h-3 bg-blue-700 rounded-full mr-1"></div>
                   Flood
                 </div>
                 <div className="flex items-center">
-                  <div className="w-3 h-3 bg-yellow-600 rounded-full mr-1"></div>
+                  <div className="w-3 h-3 bg-orange-600 rounded-full mr-1"></div>
                   Fire
                 </div>
                 <div className="flex items-center">
@@ -124,7 +140,19 @@ export default function HomePage({ authenticated, userId }: HomePageProps) {
               </div>
             )}
             <div className="bg-blue-900/50 text-blue-300 px-2 py-1 rounded text-xs">
-              GraphQL: {loading ? "Loading..." : error ? "Error" : `✓ ${data?.reliefPoolCreateds?.length || 0} pools`}
+              GraphQL:{" "}
+              {loading
+                ? "Loading..."
+                : error
+                  ? "Error"
+                  : `✓ ${data?.reliefPoolCreateds?.length || 0} pools`}
+            </div>
+            <div className="bg-purple-900/50 text-purple-300 px-2 py-1 rounded text-xs">
+              Active zones: {activeZones.length}
+            </div>
+            <div className="bg-yellow-900/50 text-yellow-300 px-2 py-1 rounded text-xs">
+              Display: {zonesToDisplay.length} zones{" "}
+              {isUsingMockData ? "(mock)" : "(live)"}
             </div>
           </div>
         )}
