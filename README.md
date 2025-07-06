@@ -30,18 +30,21 @@ A comprehensive omnichain disaster relief protocol that enables secure, cross-ch
 This project is designed to compete in the following prize tracks:
 
 ### 🥇 **Self.xyz - Best Onchain SDK Integration ($9,000)**
+
 - ✅ Complete Self.xyz SDK integration on Celo network
 - ✅ Country, age, and OFAC verification
 - ✅ Onchain proof verification system
 - ✅ Prevents duplicate aid claims through identity verification
 
 ### 🥇 **Circle - Build a Multichain USDC Payment System ($4,000)**
+
 - ✅ CCTP v2 implementation with Fast Transfers
 - ✅ Cross-chain USDC payments across 6 networks
 - ✅ Hook-based automated processing
 - ✅ Treasury management with Base Sepolia as primary network
 
 ### 🥇 **Privy - Best Consumer App ($1,700) + Best Stablecoin App ($1,650)**
+
 - ✅ Seamless embedded wallet experience
 - ✅ Social login integration
 - ✅ Consumer-friendly disaster relief interface
@@ -148,7 +151,9 @@ pnpm format               # Format code
 **Contract**: [`0xb6ECd438f941b24010286de08e055D7a6BF98a90`](https://alfajores.celoscan.io/address/0xb6ECd438f941b24010286de08e055D7a6BF98a90)
 
 **Key Implementation Files:**
+
 - **Smart Contract**: [`hardhat/contracts/IdentityVerifier.sol`](hardhat/contracts/IdentityVerifier.sol)
+
   - Lines 6-10: Self.xyz contract imports
   - Lines 12: Inherits from `SelfVerificationRoot`
   - Lines 75-76: Constructor with hub address and scope
@@ -156,6 +161,7 @@ pnpm format               # Format code
   - Lines 275-291: Scope management functions
 
 - **Frontend Component**: [`next-app/components/IdentityVerification.tsx`](next-app/components/IdentityVerification.tsx)
+
   - Lines 2-3: Self.xyz SDK imports
   - Lines 51-76: Verification config with nationality/OFAC checks
   - Lines 87: `SelfAppBuilder` initialization
@@ -166,6 +172,7 @@ pnpm format               # Format code
   - Lines 15-20: Contract deployment with Self.xyz parameters
 
 **Verification Features:**
+
 - ✅ Country verification (prevents sanctioned countries)
 - ✅ Age verification (18+ requirement)
 - ✅ OFAC sanctions screening
@@ -179,35 +186,36 @@ pnpm format               # Format code
 **Contract**: [`0xffd9D8f2Ba0713FE8824F807CCB91770814DAc7E`](https://sepolia.basescan.org/address/0xffd9D8f2Ba0713FE8824F807CCB91770814DAc7E)
 
 **Key Implementation Files:**
+
 - **CCTP Service**: [`next-app/lib/cctpV2Service.ts`](next-app/lib/cctpV2Service.ts)
+
   - Lines 32-69: CCTP contract addresses for 6 networks
   - Lines 298-409: Cross-chain USDC burning with hook data
   - Lines 411-451: Circle Iris API attestation retrieval
   - Lines 453-487: USDC minting on destination chain
 
 - **Smart Contract**: [`hardhat/contracts/ReliefPools.sol`](hardhat/contracts/ReliefPools.sol)
+
   - Lines 12-36: CCTP v2 Message Handler interface
   - Lines 227-254: `handleReceiveUnfinalizedMessage` hook handler
   - Lines 256-319: `_processCrossChainDonation` with hook data
   - Lines 270-282: Hook data extraction and poolId decoding
-
-- **Gas Station**: [`next-app/lib/circleGasService.ts`](next-app/lib/circleGasService.ts)
-  - Lines 54-98: Gasless transaction execution
-  - Lines 142-183: Fallback mechanism for failed gasless transactions
 
 - **Message Parsing**: [`hardhat/contracts/BurnMessageV2.sol`](hardhat/contracts/BurnMessageV2.sol)
   - Lines 43-158: Complete Circle CCTP V2 burn message format
   - Lines 137-145: Hook data extraction from messages
 
 **Supported Networks:**
+
 - ✅ Base Sepolia (Primary)
-- ✅ Ethereum Sepolia  
+- ✅ Ethereum Sepolia
 - ✅ Arbitrum Sepolia
 - ✅ Optimism Sepolia
 - ✅ Polygon Amoy
 - ✅ Avalanche Fuji
 
 **Features:**
+
 - ✅ Fast Transfer with hooks
 - ✅ Automated processing on destination chain
 - ✅ Gasless transactions for recipients
@@ -217,21 +225,26 @@ pnpm format               # Format code
 ### 🏆 Privy Integration - Consumer App Experience
 
 **Key Implementation Files:**
+
 - **App Provider**: [`next-app/pages/_app.tsx`](next-app/pages/_app.tsx)
+
   - Lines 69-78: PrivyProvider configuration with embedded wallets
   - Line 73: `createOnLogin: "users-without-wallets"` for seamless onboarding
 
 - **Account Management**: [`next-app/components/AccountButton.tsx`](next-app/components/AccountButton.tsx)
+
   - Lines 6-7: `usePrivy` and `useWallets` hooks
   - Lines 11-13: Authentication check and wallet validation
   - Lines 25-27: User-friendly account display
 
 - **Main Interface**: [`next-app/components/OpenReliefGlobe.tsx`](next-app/components/OpenReliefGlobe.tsx)
+
   - Lines 428-438: Authentication-gated donation flow
   - Lines 440-450: Authentication-gated claim flow
   - Lines 430-433, 442-445: Login prompts for unauthenticated users
 
 - **Wallet Management**: [`next-app/components/WalletCard.tsx`](next-app/components/WalletCard.tsx)
+
   - Lines 28-68: Session signer management for gasless transactions
   - Lines 70-95: Client-side message signing
   - Lines 97-133: Remote message signing with Privy API
@@ -241,6 +254,7 @@ pnpm format               # Format code
   - Lines 7: Privy server-side client setup
 
 **Consumer Features:**
+
 - ✅ One-click social login (Google, Twitter, Discord, Email)
 - ✅ Embedded wallet creation
 - ✅ Gasless transaction experience
@@ -249,6 +263,7 @@ pnpm format               # Format code
 - ✅ No crypto knowledge required
 
 **Stablecoin Features:**
+
 - ✅ USDC donation flows
 - ✅ Cross-chain USDC transfers
 - ✅ Automatic aid distribution
@@ -260,28 +275,31 @@ pnpm format               # Format code
 ## 📊 Deployed Contracts
 
 ### Base Sepolia (Chain ID: 84532)
-- **ReliefPools**: [`0xffd9D8f2Ba0713FE8824F807CCB91770814DAc7E`](https://sepolia.basescan.org/address/0xffd9D8f2Ba0713FE8824F807CCB91770814DAc7E)
-- **USDC Token**: [`0x036CbD53842c5426634e7929541eC2318f3dCF7e`](https://sepolia.basescan.org/address/0x036CbD53842c5426634e7929541eC2318f3dCF7e)
-- **CCTP Token Messenger**: [`0x8FE6B999Dc680CcFDD5Bf7EB0974218be2542DAA`](https://sepolia.basescan.org/address/0x8FE6B999Dc680CcFDD5Bf7EB0974218be2542DAA)
+
+- **ReliefPools**: [`0xe4B5781d40a3D55717bb30fb096D5F103453a4e9`](https://sepolia.basescan.org/address/0xe4B5781d40a3D55717bb30fb096D5F103453a4e9)
 
 ### Celo Alfajores (Chain ID: 44787)
-- **IdentityVerifier**: [`0xb6ECd438f941b24010286de08e055D7a6BF98a90`](https://alfajores.celoscan.io/address/0xb6ECd438f941b24010286de08e055D7a6BF98a90)
+
+- **IdentityVerifier**: [`0xc7588342DA85613d6C31019f1Ac4270aa3DaF967`](https://alfajores.celoscan.io/address/0xc7588342DA85613d6C31019f1Ac4270aa3DaF967)
 
 ## 🎮 How to Use
 
 ### For Donors
+
 1. **Connect Wallet**: Use social login or connect existing wallet
 2. **Select Disaster**: Choose from active relief pools
 3. **Donate USDC**: Cross-chain donations automatically processed via CCTP
 4. **Track Impact**: See real-time distribution to verified recipients
 
 ### For Recipients
+
 1. **Verify Identity**: Complete Self.xyz verification on Celo (country, age, OFAC)
 2. **Locate Disaster**: Find your local relief pool
 3. **Claim Aid**: Gasless claiming with automatic USDC distribution
 4. **One-time Only**: Identity verification prevents duplicate claims
 
-### For Pool Managers
+### For Pool Managers (coming soon)
+
 1. **Create Pool**: Set up new disaster relief fund on Base Sepolia
 2. **Manage Distribution**: Control aid allocation and requirements
 3. **Monitor Claims**: Track verified recipient claims
@@ -313,12 +331,14 @@ open-relief/
 ## 🧪 Testing
 
 ### Smart Contract Tests
+
 ```bash
 cd hardhat
 npx hardhat test
 ```
 
 ### Frontend Testing
+
 ```bash
 cd next-app
 pnpm test
