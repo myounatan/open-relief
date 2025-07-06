@@ -2,7 +2,6 @@ import { useWallets } from "@privy-io/react-auth";
 import { ethers } from "ethers";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { CCTPV2Service, SupportedChain } from "../lib/cctpV2Service";
-import { circleGasService } from "../lib/circleGasService";
 import { DisasterZoneFeature } from "../lib/countryData";
 import { useGraphQLData } from "../lib/GraphQLContext";
 
@@ -74,8 +73,7 @@ const DonationModal: React.FC<DonationModalProps> = ({
 
   // Check if gasless is supported for selected chain
   const isGaslessSupported = () => {
-    const chainId = cctpService.getChainId(selectedChain);
-    return circleGasService.isGaslessSupported(chainId);
+    return false;
   };
 
   // Get user's geolocation

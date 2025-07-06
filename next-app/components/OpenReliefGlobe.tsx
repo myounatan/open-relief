@@ -1,4 +1,5 @@
 import { useLogin, usePrivy, useWallets } from "@privy-io/react-auth";
+import { formatDistanceToNow } from "date-fns";
 import React, {
   useCallback,
   useEffect,
@@ -14,6 +15,7 @@ import {
   getPolygonCenter,
   ReliefPoolData,
 } from "../lib/countryData";
+import { geolocationService } from "../lib/geolocationService";
 import DonationModal from "./DonationModal";
 import IdentityVerification from "./IdentityVerification";
 
@@ -53,6 +55,7 @@ interface DonationHistoryData {
   currency: string;
   timestamp: Date;
   donorLocation: string;
+  cityName: string;
   isHighlighted: boolean;
 }
 
@@ -93,10 +96,10 @@ const generateRandomLocation = () => {
 };
 
 // Generate real donation history for a disaster zone from GraphQL data
-const generateRealDonationHistory = (
+const generateRealDonationHistory = async (
   zone: DisasterZoneFeature,
   donationMades: any[]
-): DonationHistoryData[] => {
+): Promise<DonationHistoryData[]> => {
   const donations: DonationHistoryData[] = [];
   const poolId = zone.properties.id;
 
@@ -105,7 +108,11 @@ const generateRealDonationHistory = (
     (donation) => donation.poolId === poolId
   );
 
-  poolDonations.forEach((donation) => {
+  console.log(`🔍 Found ${poolDonations.length} donations for pool ${poolId}`);
+
+  for (const donation of poolDonations) {
+    console.log("📊 Processing donation:", donation);
+
     // Parse location (format: "lat:lng")
     const locationParts = donation.location.split(":");
     const lat = parseFloat(locationParts[0]) || 0;
@@ -114,13 +121,39 @@ const generateRealDonationHistory = (
     // Use raw amount without conversion
     const amount = parseInt(donation.amount);
 
-    // Convert timestamp to Date
-    const timestamp = new Date(parseInt(donation.timestamp) * 1000);
+    // Convert timestamp to Date - handle both seconds and milliseconds
+    let timestamp: Date;
+    const timestampNum = parseInt(donation.timestamp);
+
+    // Check if timestamp is in seconds (typical blockchain timestamp) or milliseconds
+    if (timestampNum.toString().length === 10) {
+      // Timestamp is in seconds, convert to milliseconds
+      timestamp = new Date(timestampNum * 1000);
+    } else {
+      // Timestamp is already in milliseconds
+      timestamp = new Date(timestampNum);
+    }
+
+    console.log("⏰ Timestamp conversion:", {
+      original: donation.timestamp,
+      parsed: timestampNum,
+      converted: timestamp,
+      formatted: timestamp.toISOString(),
+    });
 
     // Get zone center for end coordinates
     const center = getPolygonCenter(zone);
 
-    donations.push({
+    // Geocode the location to get city name
+    let cityName = `${lat.toFixed(2)}, ${lng.toFixed(2)}`;
+    try {
+      const geocodeResult = await geolocationService.reverseGeocode(lat, lng);
+      cityName = geocodeResult.city;
+    } catch (error) {
+      console.warn("Failed to geocode location:", error);
+    }
+
+    const donationData: DonationHistoryData = {
       id: donation.id,
       startLat: lat,
       startLng: lng,
@@ -130,10 +163,15 @@ const generateRealDonationHistory = (
       currency: "USDC",
       timestamp,
       donorLocation: `${lat.toFixed(4)}, ${lng.toFixed(4)}`,
+      cityName,
       isHighlighted: false,
-    });
-  });
+    };
 
+    console.log("💸 Final donation data:", donationData);
+    donations.push(donationData);
+  }
+
+  console.log(`✅ Generated ${donations.length} donation history entries`);
   return donations;
 };
 
@@ -491,11 +529,15 @@ const OpenReliefGlobe: React.FC<OpenReliefGlobeProps> = ({
           zone.properties?.name
         );
         setCurrentHoveredZone(zone);
-        const donationHistory = generateRealDonationHistory(
-          zone,
-          donationMades
-        );
-        setDonationHistoryArcs(donationHistory);
+        // Handle async donation history generation
+        generateRealDonationHistory(zone, donationMades)
+          .then((donationHistory) => {
+            setDonationHistoryArcs(donationHistory);
+          })
+          .catch((error) => {
+            console.error("Error generating donation history:", error);
+            setDonationHistoryArcs([]);
+          });
       }
     }
   };
@@ -675,11 +717,15 @@ const OpenReliefGlobe: React.FC<OpenReliefGlobeProps> = ({
               setHoveredDonationId(null);
 
               setCurrentHoveredZone(zone);
-              const donationHistory = generateRealDonationHistory(
-                zone,
-                donationMades
-              );
-              setDonationHistoryArcs(donationHistory);
+              // Handle async donation history generation
+              generateRealDonationHistory(zone, donationMades)
+                .then((donationHistory) => {
+                  setDonationHistoryArcs(donationHistory);
+                })
+                .catch((error) => {
+                  console.error("Error generating donation history:", error);
+                  setDonationHistoryArcs([]);
+                });
             }
           } else if (!polygon && currentHoveredZone && !popup) {
             // Clear donation history arcs when hovering off polygon, unless popup is open
@@ -844,11 +890,33 @@ const OpenReliefGlobe: React.FC<OpenReliefGlobeProps> = ({
                           {donation.amount} {donation.currency}
                         </span>
                         <span className="text-slate-400">
-                          {donation.donorLocation}
+                          {donation.cityName}
                         </span>
                       </div>
                       <div className="text-slate-400 text-xs">
-                        {donation.timestamp.toLocaleDateString()}
+                        {(() => {
+                          try {
+                            // Check if timestamp is a valid Date object
+                            if (
+                              donation.timestamp &&
+                              donation.timestamp instanceof Date &&
+                              !isNaN(donation.timestamp.getTime())
+                            ) {
+                              return formatDistanceToNow(donation.timestamp, {
+                                addSuffix: true,
+                              });
+                            } else {
+                              return "Unknown time";
+                            }
+                          } catch (error) {
+                            console.error(
+                              "Error formatting timestamp:",
+                              error,
+                              donation.timestamp
+                            );
+                            return "Unknown time";
+                          }
+                        })()}
                       </div>
                     </div>
                   ))}
