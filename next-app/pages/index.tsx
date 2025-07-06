@@ -4,6 +4,7 @@ import dynamic from "next/dynamic";
 import Head from "next/head";
 import AccountButton from "../components/AccountButton";
 import HeroSection from "../components/HeroSection";
+import { useGraphQLData } from "../lib/GraphQLContext";
 
 // Dynamically import OpenReliefGlobe to avoid SSR issues
 const OpenReliefGlobe = dynamic(() => import("../components/OpenReliefGlobe"), {
@@ -50,6 +51,8 @@ interface HomePageProps {
 }
 
 export default function HomePage({ authenticated, userId }: HomePageProps) {
+  const { data, loading, error } = useGraphQLData();
+
   return (
     <>
       <Head>
@@ -113,9 +116,16 @@ export default function HomePage({ authenticated, userId }: HomePageProps) {
         </div>
 
         {/* Debug info in development */}
-        {process.env.NODE_ENV === "development" && authenticated && userId && (
-          <div className="absolute top-20 right-4 bg-green-900/50 text-green-300 px-2 py-1 rounded text-xs">
-            Server auth: ✓ {userId}
+        {process.env.NODE_ENV === "development" && (
+          <div className="absolute top-20 right-4 space-y-2">
+            {authenticated && userId && (
+              <div className="bg-green-900/50 text-green-300 px-2 py-1 rounded text-xs">
+                Server auth: ✓ {userId}
+              </div>
+            )}
+            <div className="bg-blue-900/50 text-blue-300 px-2 py-1 rounded text-xs">
+              GraphQL: {loading ? "Loading..." : error ? "Error" : `✓ ${data?.reliefPoolCreateds?.length || 0} pools`}
+            </div>
           </div>
         )}
       </main>

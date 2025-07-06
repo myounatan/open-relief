@@ -2,6 +2,7 @@ import { PrivyProvider } from "@privy-io/react-auth";
 import type { AppProps } from "next/app";
 import Head from "next/head";
 import "../styles/globals.css";
+import { GraphQLProvider } from "../lib/GraphQLContext";
 
 function MyApp({ Component, pageProps }: AppProps) {
   return (
@@ -74,7 +75,9 @@ function MyApp({ Component, pageProps }: AppProps) {
           },
         }}
       >
-        <Component {...pageProps} />
+        <GraphQLProvider>
+          <Component {...pageProps} />
+        </GraphQLProvider>
       </PrivyProvider>
     </>
   );
