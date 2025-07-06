@@ -117,7 +117,6 @@ export interface ReliefPoolsInterface extends Interface {
     nameOrSignature:
       | "DOMAIN_SEPARATOR"
       | "VERIFICATION_MESSAGE_TYPEHASH"
-      | "_processCrossChainDonation"
       | "adminAddress"
       | "cctpMessageTransmitter"
       | "checkPersonClaimedFromPool"
@@ -166,10 +165,6 @@ export interface ReliefPoolsInterface extends Interface {
   encodeFunctionData(
     functionFragment: "VERIFICATION_MESSAGE_TYPEHASH",
     values?: undefined
-  ): string;
-  encodeFunctionData(
-    functionFragment: "_processCrossChainDonation",
-    values: [BigNumberish, BytesLike, BytesLike]
   ): string;
   encodeFunctionData(
     functionFragment: "adminAddress",
@@ -296,10 +291,6 @@ export interface ReliefPoolsInterface extends Interface {
   ): Result;
   decodeFunctionResult(
     functionFragment: "VERIFICATION_MESSAGE_TYPEHASH",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "_processCrossChainDonation",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -575,12 +566,6 @@ export interface ReliefPools extends BaseContract {
 
   VERIFICATION_MESSAGE_TYPEHASH: TypedContractMethod<[], [string], "view">;
 
-  _processCrossChainDonation: TypedContractMethod<
-    [sourceDomain: BigNumberish, sender: BytesLike, messageBody: BytesLike],
-    [void],
-    "nonpayable"
-  >;
-
   adminAddress: TypedContractMethod<[], [string], "view">;
 
   cctpMessageTransmitter: TypedContractMethod<[], [string], "view">;
@@ -802,13 +787,6 @@ export interface ReliefPools extends BaseContract {
   getFunction(
     nameOrSignature: "VERIFICATION_MESSAGE_TYPEHASH"
   ): TypedContractMethod<[], [string], "view">;
-  getFunction(
-    nameOrSignature: "_processCrossChainDonation"
-  ): TypedContractMethod<
-    [sourceDomain: BigNumberish, sender: BytesLike, messageBody: BytesLike],
-    [void],
-    "nonpayable"
-  >;
   getFunction(
     nameOrSignature: "adminAddress"
   ): TypedContractMethod<[], [string], "view">;

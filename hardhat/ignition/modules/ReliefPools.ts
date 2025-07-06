@@ -14,61 +14,26 @@ const ReliefPoolsModule = buildModule("ReliefPoolsModule", (m) => {
   ]);
 
   // Create example relief pools with 1 USDC claimable amount (1 * 1e6 = 1,000,000)
-  const usdcAmount = 1_000_000; // 1 USDC with 6 decimals
-  
-  // Sudan War Crisis Pool
-  m.call(reliefPools, "createReliefPool", [
-    "sudan-war-crisis-2024",
-    3, // Warzone
-    0, // Critical
-    "Sudanese",
-    usdcAmount
-  ], { id: "createSudanPool" });
-
-  // Turkey Earthquake Pool
-  m.call(reliefPools, "createReliefPool", [
-    "turkey-earthquake-2024",
-    0, // Earthquake
-    0, // Critical
-    "Turkish",
-    usdcAmount
-  ], { id: "createTurkeyPool" });
+  const usdcAmount = 0.01 * 1e6; // 0.01 USDC with 6 decimals
 
   // Ukraine War Crisis Pool
   m.call(reliefPools, "createReliefPool", [
-    "ukraine-war-crisis-2024",
+    "ukraine",
     3, // Warzone
     0, // Critical
     "Ukrainian",
     usdcAmount
   ], { id: "createUkrainePool" });
 
-  // Pakistan Flood Pool
+  // Ukraine War Crisis Pool
   m.call(reliefPools, "createReliefPool", [
-    "pakistan-flood-2024",
-    1, // Flood
-    1, // HighPriority
-    "Pakistani",
-    usdcAmount
-  ], { id: "createPakistanPool" });
-
-  // California Wildfire Pool
-  m.call(reliefPools, "createReliefPool", [
-    "california-wildfire-2024",
+    "usa",
     2, // Wildfire
     1, // HighPriority
-    "American",
+    "USA",
     usdcAmount
-  ], { id: "createCaliforniaPool" });
-
-  // Syria Earthquake Pool
-  m.call(reliefPools, "createReliefPool", [
-    "syria-earthquake-2024",
-    0, // Earthquake
-    0, // Critical
-    "Syrian",
-    usdcAmount
-  ], { id: "createSyriaPool" });
+  ], { id: "createUsaPool" });
+  
 
   return { reliefPools };
 });
