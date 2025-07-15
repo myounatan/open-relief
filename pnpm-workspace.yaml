@@ -1,4 +1,7 @@
 packages:
-  - 'hardhat'
-  - 'next-app' 
-  - 'subgraph'
+  - "hardhat"
+  - "next-app"
+  - "subgraph"
+
+overrides:
+  "@next/env": "npm:@varlock/nextjs-integration"
