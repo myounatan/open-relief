@@ -1,5 +1,8 @@
+import { varlockNextConfigPlugin } from "@varlock/nextjs-integration/plugin";
+
 /** @type {import('next').NextConfig} */
-module.exports = {
+
+const nextConfig = {
   reactStrictMode: true,
   eslint: {
     // Fail build on ESLint errors
@@ -10,3 +13,5 @@ module.exports = {
     ignoreBuildErrors: false,
   },
 };
+
+export default varlockNextConfigPlugin()(nextConfig);
